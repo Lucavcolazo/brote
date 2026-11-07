@@ -1,0 +1,102 @@
+{
+  "title": "Brote: elegí el mundo visual",
+  "question": "La tirada asignó Feira. Quedate con esa, elegí una alternativa o volvé a tirar.",
+  "options": [
+    {
+      "id": "assigned",
+      "kind": "assigned",
+      "label": "Feira",
+      "kicker": "THE ROLL",
+      "lineage": "Puestos de feria y verdulería de barrio, Buenos Aires y São Paulo",
+      "thesis": "Cada uno tiene su puesto: el marcador son dos toldos a rayas con su cartel de precio.",
+      "palette": ["#FFFFFF", "#E8432E", "#2F9E57", "#FFD23F", "#1E1B16"],
+      "materials": ["lona a rayas de toldo", "cartel fluo escrito a marcador", "cajón con letra stencil"],
+      "viewport": "Arriba dos toldos a rayas lado a lado, el del que va ganando más alto; debajo de cada uno su cartel con los puntos y la racha; después el estado de hoy y el feed de fotos.",
+      "risk": "Si las rayas se usan de adorno en todas partes se vuelve disfraz de feria y pierde claridad.",
+      "raised": [
+        { "from": "challenger-zoo-map", "raise": "El color del que va ganando ocupa todo el borde superior como un solo campo, no acentos sueltos." }
+      ],
+      "html": ".impeccable/mocks/decision/assigned.html",
+      "htmlFrame": "390x844"
+    },
+    {
+      "id": "model-pick",
+      "kind": "pick",
+      "label": "Anotador de truco",
+      "kicker": "IMPECCABLE’S PICK",
+      "lineage": "La hoja de anotar truco: Nosotros / Ellos y los fósforos en cuadraditos",
+      "thesis": "Los puntos se anotan como en el truco: palitos que cierran un cuadrado cada cinco.",
+      "palette": ["#FFFFFF", "#1F3FA6", "#D7372B", "#ECEFF5", "#141821"],
+      "materials": ["birome azul", "marcador rojo", "columnas de anotador"],
+      "viewport": "Dos columnas con los nombres arriba y los puntos dibujados en palitos de truco; a la derecha la racha; abajo el feed.",
+      "risk": "Es la dirección más obvia para una pareja rioplatense y puede caer en textura de cuaderno.",
+      "html": ".impeccable/mocks/decision/model-pick.html",
+      "htmlFrame": "390x844"
+    },
+    {
+      "id": "challenger-split-flap",
+      "kind": "challenger",
+      "catalogId": "signals-instruments-split-flap-concourse",
+      "label": "Tablero de andén",
+      "verdict": "competitive",
+      "lineage": "Tableros split-flap de estación, pasados a claro",
+      "thesis": "El marcador es un tablero de paletas que hace clac cuando alguien suma.",
+      "palette": ["#F4F5F2", "#FFFFFF", "#15171A", "#F2A516", "#D33A2C"],
+      "materials": ["paletas blancas con números negros", "filas regladas", "luz ámbar de aviso"],
+      "viewport": "Un tablero de dos filas (Luca, Giovanna) con puntos y racha en paletas; abajo el feed como tabla de llegadas.",
+      "case": "Funde muy bien con la rivalidad del marcador; pierde porque su mundo nativo es negro y acá todo debe ser claro.",
+      "risk": "Pasado a claro puede perder el contraste que lo hace reconocible.",
+      "html": ".impeccable/mocks/decision/challenger-split-flap.html",
+      "htmlFrame": "390x844",
+      "hero": "https://impeccable.style/worlds/cards/signals-instruments-split-flap-concourse-hero.webp"
+    },
+    {
+      "id": "challenger-ticket-wallet",
+      "kind": "challenger",
+      "catalogId": "vernacular-ephemera-jet-age-ticket-wallet",
+      "label": "Talonario de cupones",
+      "verdict": "competitive",
+      "lineage": "Billetera de pasajes de avión de los 60",
+      "thesis": "Cada día es un cupón que se sella VALE o NO VALE, y cada premio de la tienda es un vale para arrancar.",
+      "palette": ["#FFFFFF", "#1B2A57", "#D3312B", "#6B4FA0", "#EEF0F5"],
+      "materials": ["cupones con talón", "sellos de goma", "números de carbónico"],
+      "viewport": "Arriba dos cupones con los puntos en números de carbónico; abajo los días de la semana como talones sellados.",
+      "case": "Funde muy bien con los sellos de revisión y la tienda; pierde en identificación porque los aviones no son su mundo.",
+      "risk": "Puede sentirse de oficina o de trámite en vez de juego.",
+      "html": ".impeccable/mocks/decision/challenger-ticket-wallet.html",
+      "htmlFrame": "390x844",
+      "hero": "https://impeccable.style/worlds/cards/vernacular-ephemera-jet-age-ticket-wallet-hero.webp"
+    },
+    {
+      "id": "challenger-zoo-map",
+      "kind": "challenger",
+      "catalogId": "aww2-zoo-gardens-guide-map",
+      "label": "Mapa de zoológico",
+      "verdict": "declined",
+      "lineage": "Mapas guía de zoológicos y jardines",
+      "thesis": "Cada sección es una isla de color plano.",
+      "palette": ["#F5F1E4", "#8ED462", "#FF705D", "#F5E211", "#2C2E2A"],
+      "materials": ["color plano", "costas redondeadas"],
+      "viewport": "Una isla verde por pantalla con cápsulas de color.",
+      "case": "Funde mal: las islas y los rebotes se leen infantiles, justo lo que no quieren.",
+      "risk": "Infantil.",
+      "kept": "Compromiso de color a escala de pantalla: un campo domina, no acentos sueltos.",
+      "hero": "https://impeccable.style/worlds/cards/aww2-zoo-gardens-guide-map-hero.webp"
+    }
+  ],
+  "reroll": { "registers": ["safer", "bolder"] },
+  "buildPath": { "value": "code" },
+  "canon": true,
+  "canonCard": {
+    "kind": "canon",
+    "label": "El estándar de la categoría",
+    "thesis": "Una app de hábitos clara y prolija, como las mejores del rubro.",
+    "palette": ["#FFFFFF", "#F3F4F6", "#111827", "#16A34A"],
+    "materials": ["tarjetas blancas", "un acento verde", "íconos de línea"],
+    "viewport": "Tarjeta de puntaje arriba, anillos de progreso, feed de tarjetas.",
+    "risk": "Indistinguible de cualquier otra app de hábitos.",
+    "html": ".impeccable/mocks/decision/canon.html",
+    "htmlFrame": "390x844"
+  },
+  "steer": true
+}

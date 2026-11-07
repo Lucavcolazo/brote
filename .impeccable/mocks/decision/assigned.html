@@ -1,0 +1,47 @@
+<!doctype html><html><head><meta charset="utf-8">
+<link href="https://fonts.googleapis.com/css2?family=Archivo:wdth,wght@62..125,400..900&display=swap" rel="stylesheet">
+<style>
+*{box-sizing:border-box;margin:0}
+body{width:390px;height:844px;overflow:hidden;background:#fff;font-family:Archivo,sans-serif;color:#1E1B16}
+.top{display:grid;grid-template-columns:1fr 1fr;gap:10px;padding:52px 14px 0;background:#E8432E}
+.stall{position:relative}
+.awning{height:74px;background:repeating-linear-gradient(90deg,#fff 0 22px,var(--c) 22px 44px);
+ -webkit-mask:radial-gradient(11px at 11px 100%,#0000 98%,#000) 0 0/22px 100%;border-radius:10px 10px 0 0}
+.lead .awning{height:96px}
+.name{font-weight:800;font-stretch:75%;font-size:15px;letter-spacing:.06em;text-transform:uppercase;color:#fff;margin:10px 2px 6px}
+.placard{background:#FFD23F;border-radius:6px;padding:10px 12px 12px;transform:rotate(-2deg);box-shadow:0 2px 0 #1e1b1622;margin-bottom:-26px;position:relative}
+.stall:nth-child(2) .placard{background:#C8F25A;transform:rotate(1.5deg)}
+.pts{font-weight:900;font-stretch:62%;font-size:76px;line-height:.85}
+.pts small{font-size:18px;font-stretch:75%;font-weight:800;margin-left:4px}
+.streak{font-size:12px;font-weight:700;margin-top:6px;display:flex;gap:6px;align-items:center}
+.flame{width:10px;height:13px;background:#E8432E;border-radius:50% 50% 50% 50%/60% 60% 40% 40%}
+main{padding:44px 14px 0}
+.today{display:flex;gap:8px;margin-bottom:16px}
+.chip{flex:1;border:2px solid #1E1B16;border-radius:999px;padding:9px 12px;font-size:13px;font-weight:700;display:flex;gap:8px;align-items:center}
+.chip.ok{background:#2F9E57;border-color:#2F9E57;color:#fff}
+.dot{width:10px;height:10px;border-radius:50%;background:currentColor}
+.post{border:2px solid #1E1B16;border-radius:16px;overflow:hidden}
+.ph{height:250px;background:radial-gradient(circle at 40% 45%,#ff6b6b 0 22%,#d9312e 23% 30%,#ffd5cf 31%)}
+.meta{display:flex;justify-content:space-between;align-items:center;padding:10px 12px;font-size:14px;font-weight:700}
+.tag{background:#E8432E;color:#fff;font-stretch:75%;text-transform:uppercase;letter-spacing:.05em;font-size:12px;padding:4px 8px;border-radius:4px}
+.acts{display:flex;gap:8px;padding:0 12px 12px}
+.b{flex:1;text-align:center;padding:10px;border-radius:999px;font-weight:800;font-size:14px}
+.y{background:#2F9E57;color:#fff}.n{border:2px solid #1E1B16}
+nav{position:absolute;left:0;right:0;bottom:0;height:78px;background:#fff;border-top:2px solid #1E1B16;display:flex;justify-content:space-around;align-items:center;padding-bottom:14px}
+nav i{width:24px;height:24px;border:2.5px solid #1E1B16;border-radius:7px;display:block}
+nav .fab{width:58px;height:58px;border-radius:50%;background:#1E1B16;margin-top:-30px;border:4px solid #fff}
+</style></head><body>
+<div class="top">
+ <div class="stall lead" style="--c:#2F9E57"><div class="awning"></div><div class="name">Luca · gana</div>
+  <div class="placard"><div class="pts">6<small>PTS</small></div><div class="streak"><span class="flame"></span>Racha 4 días</div></div></div>
+ <div class="stall" style="--c:#FFD23F"><div class="awning"></div><div class="name">Giovanna</div>
+  <div class="placard"><div class="pts">4<small>PTS</small></div><div class="streak"><span class="flame"></span>Racha 2 días</div></div></div>
+</div>
+<main>
+ <div class="today"><div class="chip ok"><span class="dot"></span>Luca cumplió</div><div class="chip"><span class="dot"></span>Giovanna falta</div></div>
+ <div class="post"><div class="ph"></div>
+  <div class="meta"><span>Giovanna · Bowl de frutillas</span><span class="tag">Fruta</span></div>
+  <div class="acts"><span class="b y">Vale</span><span class="b n">No cuenta</span></div></div>
+</main>
+<nav><i></i><i></i><span class="fab"></span><i></i><i></i></nav>
+</body></html>

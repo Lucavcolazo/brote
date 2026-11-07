@@ -1,0 +1,35 @@
+<!doctype html><html><head><meta charset="utf-8">
+<link href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@600;800&family=Barlow:wght@400..700&display=swap" rel="stylesheet">
+<style>
+*{box-sizing:border-box;margin:0}
+body{width:390px;height:844px;overflow:hidden;background:#EEF0F5;font-family:Barlow,sans-serif;color:#1B2A57}
+.cps{display:grid;grid-template-columns:1fr 1fr;gap:10px;padding:54px 12px 0}
+.cp{background:#fff;border-radius:10px;overflow:hidden;position:relative}
+.cp .h{background:#1B2A57;color:#fff;font-family:"Barlow Condensed";font-weight:800;letter-spacing:.1em;font-size:14px;padding:8px 12px}
+.cp.lead .h{background:#D3312B}
+.cp .b{padding:10px 12px 16px;border-bottom:2px dashed #c9cfdd}
+.num{font-family:"Barlow Condensed";font-weight:800;font-size:64px;line-height:.9;color:#6B4FA0}
+.lbl{font-size:11px;letter-spacing:.12em;font-weight:700;color:#7a84a3}
+.stub{padding:8px 12px;font-size:12px;font-weight:700}
+main{padding:16px 12px}
+.week{display:flex;gap:6px;margin-bottom:14px}
+.t{flex:1;background:#fff;border-radius:6px;height:54px;display:grid;place-items:center;font-family:"Barlow Condensed";font-weight:800;font-size:12px;position:relative}
+.t.v::after{content:"VALE";position:absolute;color:#2b8a4b;border:2px solid #2b8a4b;border-radius:4px;padding:0 3px;font-size:10px;transform:rotate(-12deg);bottom:6px}
+.t.x::after{content:"VOID";position:absolute;color:#D3312B;border:2px solid #D3312B;border-radius:4px;padding:0 3px;font-size:10px;transform:rotate(10deg);bottom:6px}
+.post{background:#fff;border-radius:12px;overflow:hidden}
+.ph{height:220px;background:radial-gradient(circle at 50% 50%,#ff9d4d 0 24%,#e66a15 25% 32%,#ffe6d1 33%)}
+.meta{padding:12px 14px;font-weight:700}
+nav{position:absolute;left:0;right:0;bottom:0;height:78px;background:#fff;display:flex;justify-content:space-around;align-items:center;padding-bottom:14px}
+nav i{width:24px;height:24px;border:2.5px solid #1B2A57;border-radius:5px;display:block}
+nav .fab{width:56px;height:56px;border-radius:12px;background:#D3312B;margin-top:-26px}
+</style></head><body>
+<div class="cps">
+ <div class="cp lead"><div class="h">LUCA · LÍDER</div><div class="b"><div class="lbl">PUNTOS</div><div class="num">06</div></div><div class="stub">Racha 4 días</div></div>
+ <div class="cp"><div class="h">GIOVANNA</div><div class="b"><div class="lbl">PUNTOS</div><div class="num">04</div></div><div class="stub">Racha 2 días</div></div>
+</div>
+<main>
+ <div class="week"><span class="t v">LUN</span><span class="t v">MAR</span><span class="t x">MIÉ</span><span class="t v">JUE</span><span class="t">VIE</span><span class="t">SÁB</span><span class="t">DOM</span></div>
+ <div class="post"><div class="ph"></div><div class="meta">Giovanna · Zanahoria rallada</div></div>
+</main>
+<nav><i></i><i></i><span class="fab"></span><i></i><i></i></nav>
+</body></html>

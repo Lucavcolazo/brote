@@ -1,0 +1,41 @@
+<!doctype html><html><head><meta charset="utf-8">
+<link href="https://fonts.googleapis.com/css2?family=Schibsted+Grotesk:wght@400..900&family=Caveat+Brush&display=swap" rel="stylesheet">
+<style>
+*{box-sizing:border-box;margin:0}
+body{width:390px;height:844px;overflow:hidden;background:#fff;font-family:"Schibsted Grotesk",sans-serif;color:#141821}
+header{padding:56px 18px 16px;border-bottom:3px solid #1F3FA6}
+h1{font-size:13px;letter-spacing:.14em;text-transform:uppercase;color:#1F3FA6}
+.sheet{display:grid;grid-template-columns:1fr 2px 1fr;margin-top:14px}
+.rule{background:#1F3FA6}
+.col{padding:0 12px}
+.col h2{font-size:22px;font-weight:900;margin-bottom:10px}
+.tally{display:flex;flex-wrap:wrap;gap:10px}
+.sq{width:34px;height:34px;border:3px solid #1F3FA6;border-radius:2px;position:relative}
+.sq.full::after{content:"";position:absolute;inset:-4px;background:linear-gradient(45deg,transparent 46%,#D7372B 46% 54%,transparent 54%)}
+.sq.half{border-right-color:transparent;border-bottom-color:transparent}
+.n{font-size:40px;font-weight:900;color:#1F3FA6;margin-top:10px}
+.n span{font-family:"Caveat Brush";font-size:22px;color:#D7372B;margin-left:6px}
+main{padding:18px}
+.days{display:flex;gap:6px;margin-bottom:18px}
+.d{flex:1;height:38px;border-radius:8px;background:#ECEFF5;display:grid;place-items:center;font-size:12px;font-weight:700;color:#5b6475}
+.d.ok{background:#1F3FA6;color:#fff}.d.x{background:#fde4e1;color:#D7372B}
+.post{border-radius:16px;overflow:hidden;border:1px solid #d9dee8}
+.ph{height:240px;background:radial-gradient(circle at 50% 50%,#9ad06b 0 25%,#4f8f2e 26% 34%,#e7f3dc 35%)}
+.meta{padding:12px 14px;font-weight:700}
+.meta small{display:block;color:#5b6475;font-weight:500}
+nav{position:absolute;left:0;right:0;bottom:0;height:78px;border-top:1px solid #d9dee8;display:flex;justify-content:space-around;align-items:center;padding-bottom:14px;background:#fff}
+nav i{width:24px;height:24px;border:2.5px solid #141821;border-radius:50%;display:block}
+nav .fab{width:56px;height:56px;border-radius:16px;background:#1F3FA6;margin-top:-26px;border:none}
+</style></head><body>
+<header><h1>Brote · semana 45</h1>
+<div class="sheet">
+ <div class="col"><h2>Luca</h2><div class="tally"><span class="sq full"></span><span class="sq half"></span></div><div class="n">6<span>racha 4</span></div></div>
+ <div class="rule"></div>
+ <div class="col"><h2>Giovanna</h2><div class="tally"><span class="sq"></span></div><div class="n">4<span>racha 2</span></div></div>
+</div></header>
+<main>
+ <div class="days"><span class="d ok">L</span><span class="d ok">M</span><span class="d x">M</span><span class="d ok">J</span><span class="d">V</span><span class="d">S</span><span class="d">D</span></div>
+ <div class="post"><div class="ph"></div><div class="meta">Ensalada de rúcula<small>Luca · hoy 13:12 · Verdura</small></div></div>
+</main>
+<nav><i></i><i></i><span class="fab"></span><i></i><i></i></nav>
+</body></html>

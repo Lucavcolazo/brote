@@ -1,0 +1,190 @@
+// Prueba la migración en un Postgres embebido (PGlite) con stubs de Supabase.
+// Uso: npm run test:sql
+import { PGlite } from "@electric-sql/pglite";
+import { readFileSync } from "node:fs";
+
+const migration = readFileSync(new URL("../supabase/migrations/20261106000000_brote.sql", import.meta.url), "utf8")
+  .replace(/^create extension.*$/gim, "");
+
+const stubs = `
+create role anon nologin; create role authenticated nologin; create role service_role nologin bypassrls;
+create schema auth; create schema storage; create schema vault; create schema net; create schema extensions;
+create table auth.users (id uuid primary key);
+create function auth.uid() returns uuid language sql stable as $$ select nullif(current_setting('request.jwt.claim.sub', true), '')::uuid $$;
+grant usage on schema auth to anon, authenticated, service_role;
+create table storage.buckets (id text primary key, name text, public bool, file_size_limit int, allowed_mime_types text[]);
+create table storage.objects (id uuid default gen_random_uuid(), bucket_id text, name text);
+create function storage.foldername(name text) returns text[] language sql as $$ select (string_to_array(name, '/'))[1:array_length(string_to_array(name, '/'), 1) - 1] $$;
+create view vault.decrypted_secrets as select 'x'::text as name, 'y'::text as decrypted_secret where false;
+create table net.calls (url text, body jsonb);
+create function net.http_post(url text, body jsonb, headers jsonb, timeout_milliseconds int) returns bigint
+  language sql as $$ insert into net.calls values (url, body); select 1::bigint $$;
+create publication supabase_realtime;
+grant usage on schema storage to authenticated, service_role;
+grant select, insert, delete on storage.objects to authenticated;
+alter table storage.objects enable row level security;
+grant usage on schema public to anon, authenticated, service_role;
+alter default privileges in schema public grant all on tables to anon, authenticated, service_role;
+alter default privileges in schema public grant all on functions to anon, authenticated, service_role;
+`;
+
+const db = new PGlite();
+let failures = 0;
+const ok = (cond, msg) => {
+  console.log(`${cond ? "✅" : "❌"} ${msg}`);
+  if (!cond) failures++;
+};
+async function as(user, fn) {
+  await db.exec(`set role authenticated; select set_config('request.jwt.claim.sub', '${user ?? ""}', false);`);
+  try {
+    return await fn();
+  } finally {
+    await db.exec(`reset role;`);
+  }
+}
+async function expectError(promise, re, msg) {
+  try {
+    await promise;
+    ok(false, `${msg} (no tiró error)`);
+  } catch (e) {
+    ok(re.test(e.message), `${msg} → "${e.message}"`);
+  }
+}
+const one = async (sql, params) => (await db.query(sql, params)).rows[0];
+const all = async (sql, params) => (await db.query(sql, params)).rows;
+
+await db.exec(stubs);
+await db.exec(migration);
+ok(true, "migración aplicada");
+
+const A = "00000000-0000-0000-0000-00000000000a";
+const B = "00000000-0000-0000-0000-00000000000b";
+const C = "00000000-0000-0000-0000-00000000000c";
+await db.exec(`insert into auth.users values ('${A}'), ('${B}'), ('${C}')`);
+
+// --- perfiles (app cerrada: 2 personas) ---
+const pa = await as(A, () => one(`select * from public.claim_profile('Luca', '🦊', 'es')`));
+ok(pa.couple_id && pa.lang === "es", "Luca entra y se crea la pareja");
+const pa2 = await as(A, () => one(`select * from public.claim_profile('Otro', '🐻', 'pt')`));
+ok(pa2.name === "Luca", "volver a entrar no pisa el perfil");
+const pb = await as(B, () => one(`select * from public.claim_profile('Giovanna', '🌻', 'pt')`));
+ok(pb.couple_id === pa.couple_id && pb.lang === "pt", "Giovanna entra a la misma pareja, en portugués");
+const couple = { id: pa.couple_id };
+await as(C, () => expectError(db.query(`select public.claim_profile('Intruso')`), /app_full/, "un tercero no puede entrar"));
+ok((await as(A, () => all(`select * from public.store_items`))).length === 0, "la tienda arranca vacía");
+await as(A, () => db.query(`insert into public.store_items (title, cost) values ('Elijo la peli', 2), ('Zafo de los platos', 2), ('Masajes', 3), ('Desayuno', 5), ('Plan del finde', 6), ('Cena afuera', 10)`));
+const items = await as(A, () => all(`select * from public.store_items order by cost, title`));
+ok(items.length === 6, "Luca carga 6 premios");
+await as(B, () => db.query(`update public.store_items set cost = 4 where title = 'Desayuno'`));
+ok((await one(`select cost from public.store_items where title = 'Desayuno'`)).cost === 4, "Giovanna edita un premio");
+await as(B, () => db.query(`update public.store_items set cost = 5 where title = 'Desayuno'`));
+await as(A, () => db.query(`update public.profiles set avatar = $1 where id = $2`, [JSON.stringify({ shape: "bean", color: "tomato", eyes: "happy", mouth: "grin" }), A]));
+ok((await one(`select avatar->>'shape' as s from public.profiles where id = $1`, [A])).s === "bean", "Luca guarda su avatar");
+await as(A, () => db.query(`update public.profiles set avatar = '{"shape":"hack"}' where id = $1`, [B]));
+ok((await one(`select avatar->>'shape' as s from public.profiles where id = $1`, [B])).s === null, "Luca no puede tocar el avatar de Giovanna");
+const cProfiles = await as(C, () => all(`select * from public.profiles`));
+ok(cProfiles.length === 0, "el tercero no ve perfiles");
+await as(B, () => db.query(`update public.profiles set lang = 'es' where id = $1`, [B]));
+ok((await one(`select lang from public.profiles where id = $1`, [B])).lang === "es", "se puede cambiar el idioma");
+await as(B, () => db.query(`update public.profiles set lang = 'pt' where id = $1`, [B]));
+
+// Hacemos que se hayan unido hace 10 días para poder cerrar días pasados.
+await db.exec(`update public.profiles set joined_at = now() - interval '10 days'`);
+
+// --- comidas ---
+const today = (await one(`select private.local_today() as d`)).d.toISOString().slice(0, 10);
+const path = `${couple.id}/${A}/foto1.jpg`;
+await as(A, () => db.query(`insert into public.meals (kind, description, photo_path) values ('fruta', 'Manzana', $1)`, [path]));
+ok(true, "A carga una fruta hoy");
+await as(A, () => expectError(db.query(`insert into public.meals (kind, photo_path) values ('fruta', null)`), /row-level security|violates/, "sin foto no se puede"));
+await as(A, () => expectError(db.query(`insert into public.meals (kind, photo_path, local_date) values ('fruta', $1, current_date - 5)`, [path]), /row-level security/, "no se puede cargar hace 5 días"));
+await as(A, () => expectError(db.query(`insert into public.meals (kind, photo_path) values ('fruta', $1)`, [`${couple.id}/${B}/x.jpg`]), /row-level security/, "no se puede subir en la carpeta del otro"));
+await as(A, () => expectError(db.query(`insert into public.meals (kind, photo_path, review) values ('fruta', $1, 'ok')`, [path]), /permission denied/, "no se puede autoaprobar"));
+const calls = await all(`select * from net.calls`);
+ok(calls.length === 0, "sin secretos en vault, el trigger no rompe el insert");
+
+const mealA = await one(`select id from public.meals limit 1`);
+await as(A, () => expectError(db.query(`select public.review_meal($1, 'ok')`, [mealA.id]), /cannot_review/, "A no puede revisar su propia comida"));
+await as(B, () => db.query(`select public.review_meal($1, 'ok')`, [mealA.id]));
+ok((await one(`select review from public.meals where id = $1`, [mealA.id])).review === "ok", "B aprueba la comida de A");
+
+// --- cierre del día ---
+// Ayer: A comió verdura, B nada. Anteayer: ninguno. Hoy-3: B comió algo que A rechazó.
+await db.exec(`
+  insert into public.meals (user_id, couple_id, kind, photo_path, local_date) values
+    ('${A}', '${couple.id}', 'verdura', '${couple.id}/${A}/ayer.jpg', date '${today}' - 1),
+    ('${B}', '${couple.id}', 'fruta',   '${couple.id}/${B}/rech.jpg', date '${today}' - 3);
+  update public.meals set review = 'rejected' where local_date = date '${today}' - 3;
+`);
+const d1 = await all(`select * from public.srv_close_day(date '${today}' - 1)`);
+ok(d1.length === 1 && d1[0].failed_name === "Giovanna" && d1[0].beneficiary_name === "Luca", "ayer: Giovanna no comió → +1 para Luca");
+const d1again = await all(`select * from public.srv_close_day(date '${today}' - 1)`);
+ok(d1again.length === 0, "cerrar el mismo día dos veces no duplica puntos");
+const d2 = await all(`select * from public.srv_close_day(date '${today}' - 2)`);
+ok(d2.length === 2, "anteayer: ninguno comió → un punto para cada uno");
+const d3 = await all(`select * from public.srv_close_day(date '${today}' - 3)`);
+ok(d3.length === 2, "comida rechazada no cuenta");
+const d20 = await all(`select * from public.srv_close_day(date '${today}' - 20)`);
+ok(d20.length === 0, "días antes de unirse no cuentan");
+
+const bal = await all(`select user_id, sum(amount)::int as s from public.point_events group by 1 order by 1`);
+ok(bal.find((r) => r.user_id === A).s === 3 && bal.find((r) => r.user_id === B).s === 2, "saldos: Luca 3, Giovanna 2");
+
+// --- tienda ---
+const masaje = items.find((i) => i.cost === 3);
+const peli = items.find((i) => i.title === 'Elijo la peli');
+const cena = items.find((i) => i.cost === 10);
+await as(B, () => expectError(db.query(`select public.redeem_item($1)`, [masaje.id]), /not_enough_points/, "Giovanna (2 pts) no puede canjear algo de 3"));
+await as(A, () => expectError(db.query(`select public.redeem_item($1)`, [cena.id]), /not_enough_points/, "Luca no puede canjear la cena (10)"));
+const red = await as(A, () => one(`select * from public.redeem_item($1)`, [masaje.id]));
+ok(red.status === "pendiente", "Luca canjea masajes (3)");
+ok((await one(`select sum(amount)::int as s from public.point_events where user_id = $1`, [A])).s === 0, "a Luca le quedan 0");
+await as(B, () => db.query(`select public.fulfill_redemption($1)`, [red.id]));
+ok((await one(`select status from public.redemptions where id = $1`, [red.id])).status === "cumplido", "Giovanna marca el canje como cumplido");
+await as(B, () => db.query(`select public.redeem_item($1)`, [peli.id]));
+ok(true, "Giovanna canjea la peli (2)");
+await as(A, () => expectError(db.query(`insert into public.point_events (couple_id, user_id, amount, kind) values ($1, $2, 100, 'adjust')`, [couple.id, A]), /permission denied/, "nadie se puede regalar puntos"));
+await as(A, () => db.query(`insert into public.store_items (title, emoji, cost) values ('Helado', '🍦', 4)`));
+ok((await as(B, () => all(`select * from public.store_items where title = 'Helado'`))).length === 1, "Luca agrega un premio y Giovanna lo ve");
+await as(C, () => expectError(db.query(`select public.redeem_item($1)`, [peli.id]), /item_not_found/, "C no puede canjear premios ajenos"));
+
+// --- rachas ---
+// A: hoy, ayer y hace 6-8 días (racha vieja de 3). B: solo hace 3 días (rechazada) → 0.
+await db.exec(`insert into public.meals (user_id, couple_id, kind, photo_path, local_date) values
+  ('${A}', '${couple.id}', 'fruta', 'x/a6.jpg', date '${today}' - 6),
+  ('${A}', '${couple.id}', 'fruta', 'x/a7.jpg', date '${today}' - 7),
+  ('${A}', '${couple.id}', 'fruta', 'x/a8.jpg', date '${today}' - 8)`);
+const st = await as(A, () => all(`select * from public.couple_streaks()`));
+const sa = st.find((r) => r.user_id === A), sb = st.find((r) => r.user_id === B);
+ok(sa.current_streak === 2 && sa.best_streak === 3, `racha Luca: actual ${sa.current_streak} (esperado 2), mejor ${sa.best_streak} (esperado 3)`);
+ok(sb.current_streak === 0 && sb.best_streak === 0, "racha Giovanna: 0 (su única comida fue rechazada)");
+const st2 = await one(`select * from private.user_streaks($1, date '${today}' - 1)`, [A]);
+ok(st2.current_streak === 1, "la racha sigue viva si el último día cumplido fue ayer");
+
+// --- resumen semanal ---
+const monday = (await one(`select (date '${today}' - ((extract(isodow from date '${today}')::int + 6) % 7))::date as m`)).m;
+const sums = await all(`select * from public.srv_weekly_summaries($1)`, [monday]);
+ok(sums.length === 1 && sums[0].data.members.length === 2 && typeof sums[0].data.members[0].streak === "number", "resumen semanal con rachas");
+console.log("   ", JSON.stringify(sums[0].data.members.map(({ meals, ...m }) => m)));
+await all(`select * from public.srv_weekly_summaries($1)`, [monday]);
+ok((await one(`select count(*)::int as n from public.weekly_summaries`)).n === 1, "regenerar el resumen no lo duplica");
+
+// --- limpieza de fotos ---
+const toClean = await all(`select * from public.srv_photos_to_cleanup(date '${today}')`);
+ok(toClean.length === 5, `fotos anteriores a hoy para borrar: ${toClean.length}`);
+const n = (await one(`select public.srv_mark_photos_deleted($1) as n`, [toClean.map((r) => r.id)])).n;
+ok(n === 5, "fotos marcadas como borradas");
+ok((await one(`select count(*)::int as n from public.meals`)).n === 6, "las comidas (data) siguen estando");
+
+// --- permisos de funciones del servidor ---
+await as(A, () => expectError(db.query(`select * from public.srv_close_day(current_date)`), /permission denied/, "un usuario no puede correr el cierre del día"));
+
+// --- storage ---
+await as(A, () => db.query(`insert into storage.objects (bucket_id, name) values ('meal-photos', $1)`, [`${couple.id}/${A}/ok.jpg`]));
+ok(true, "A sube foto en su carpeta");
+await as(A, () => expectError(db.query(`insert into storage.objects (bucket_id, name) values ('meal-photos', $1)`, [`${couple.id}/${B}/no.jpg`]), /row-level security/, "A no sube en la carpeta de B"));
+const seenByC = await as(C, () => all(`select * from storage.objects`));
+ok(seenByC.length === 0, "C no ve fotos de la pareja");
+
+console.log(failures ? `\n${failures} prueba(s) fallaron` : "\nTodo OK");
+process.exit(failures ? 1 : 0);

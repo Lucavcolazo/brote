@@ -1,0 +1,34 @@
+<!doctype html><html><head><meta charset="utf-8">
+<link href="https://fonts.googleapis.com/css2?family=Oswald:wght@500;700&family=Work+Sans:wght@400..800&display=swap" rel="stylesheet">
+<style>
+*{box-sizing:border-box;margin:0}
+body{width:390px;height:844px;overflow:hidden;background:#F4F5F2;font-family:"Work Sans",sans-serif;color:#15171A}
+.board{margin:54px 12px 0;background:#e2e4df;border-radius:14px;padding:12px}
+.hd{display:grid;grid-template-columns:1fr 64px 64px;gap:6px;font-size:10px;letter-spacing:.14em;font-weight:700;color:#6b6f75;padding:0 4px 8px}
+.row{display:grid;grid-template-columns:1fr 64px 64px;gap:6px;margin-bottom:6px}
+.f{background:#fff;border-radius:5px;height:56px;display:grid;place-items:center;font-family:Oswald;font-weight:700;font-size:30px;position:relative;box-shadow:0 1px 0 #0002}
+.f::after{content:"";position:absolute;left:0;right:0;top:50%;height:1px;background:#15171a22}
+.f.name{justify-content:start;padding-left:14px;font-size:24px;letter-spacing:.04em}
+.row.lead .f.name{color:#D33A2C}
+.lamp{display:inline-block;width:8px;height:8px;border-radius:50%;background:#F2A516;margin-right:8px}
+main{padding:18px 12px}
+.st{display:flex;justify-content:space-between;font-size:13px;font-weight:600;padding:12px 14px;background:#fff;border-radius:10px;margin-bottom:12px}
+.post{background:#fff;border-radius:14px;overflow:hidden}
+.ph{height:230px;background:radial-gradient(circle at 50% 50%,#ffcf4a 0 24%,#e49b12 25% 32%,#fff3cf 33%)}
+.meta{display:grid;grid-template-columns:1fr auto;padding:12px 14px;font-weight:700;font-size:14px}
+.meta span{font-family:Oswald;color:#F2A516}
+nav{position:absolute;left:0;right:0;bottom:0;height:78px;background:#fff;display:flex;justify-content:space-around;align-items:center;padding-bottom:14px}
+nav i{width:24px;height:24px;border:2.5px solid #15171A;border-radius:6px;display:block}
+nav .fab{width:56px;height:56px;border-radius:50%;background:#15171A;margin-top:-26px}
+</style></head><body>
+<div class="board">
+ <div class="hd"><span>JUGADOR</span><span>PTS</span><span>RACHA</span></div>
+ <div class="row lead"><div class="f name">LUCA</div><div class="f">06</div><div class="f">04</div></div>
+ <div class="row"><div class="f name">GIOVANNA</div><div class="f">04</div><div class="f">02</div></div>
+</div>
+<main>
+ <div class="st"><span>Hoy</span><span><span class="lamp"></span>Giovanna todavía no subió</span></div>
+ <div class="post"><div class="ph"></div><div class="meta">Luca · Banana · 08:12<span>FRUTA</span></div></div>
+</main>
+<nav><i></i><i></i><span class="fab"></span><i></i><i></i></nav>
+</body></html>

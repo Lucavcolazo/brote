@@ -1,0 +1,3 @@
+# La función "push" la llaman la base y pg_cron con x-cron-secret, no usuarios con JWT.
+[functions.push]
+verify_jwt = false
