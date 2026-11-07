@@ -13,7 +13,7 @@ function check<T = any>(res: { data: unknown; error: { message: string } | null 
 const cleanError = (msg: string) => msg;
 
 export function createSupabaseApi(url: string, key: string): Api {
-  const sb = createClient(url, key, { auth: { persistSession: true, autoRefreshToken: true } });
+  const sb = createClient(url, key, { auth: { persistSession: true, autoRefreshToken: true, detectSessionInUrl: true, flowType: "implicit" } });
   let cachedMe: Me | null = null;
 
   async function uid(): Promise<string | null> {
@@ -43,8 +43,17 @@ export function createSupabaseApi(url: string, key: string): Api {
       return () => data.subscription.unsubscribe();
     },
 
-    async signIn(email, password) {
-      check(await sb.auth.signInWithPassword({ email, password }));
+    async sendLoginEmail(email) {
+      check(
+        await sb.auth.signInWithOtp({
+          email,
+          options: { shouldCreateUser: false, emailRedirectTo: location.origin },
+        }),
+      );
+    },
+
+    async verifyLoginCode(email, code) {
+      check(await sb.auth.verifyOtp({ email, token: code, type: "email" }));
     },
 
     async signOut() {
@@ -67,9 +76,8 @@ export function createSupabaseApi(url: string, key: string): Api {
       return cachedMe;
     },
 
-    async ensureProfile({ name, emoji, lang }) {
-      const prof = check(await sb.rpc("claim_profile", { p_name: name, p_emoji: emoji, p_lang: lang })) as Profile;
-      if (prof.lang !== lang) await api.updateProfile({ lang });
+    async createProfile({ name, lang }) {
+      check(await sb.rpc("claim_profile", { p_name: name, p_lang: lang }));
       cachedMe = null;
     },
 

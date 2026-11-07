@@ -1,9 +1,11 @@
+import { AnimatePresence, motion } from "motion/react";
 import { useEffect, useRef, useState, type FormEvent } from "react";
+import { PiArrowsClockwiseBold, PiCameraBold, PiImagesBold, PiPaperPlaneTiltBold } from "react-icons/pi";
 import { api, type MealKind } from "../api";
 import { useI18n } from "../i18n";
 import { addDays, canLogYesterday, localToday } from "../lib/dates";
 import { compressImage } from "../lib/image";
-import { KIND_META, Sheet, errMsg, useToast } from "../ui";
+import { KIND_META, Segmented, Sheet, ease, errMsg, press, useToast } from "../ui";
 
 export function NewMealSheet({ open, onClose, onSaved }: { open: boolean; onClose: () => void; onSaved: () => void }) {
   const { t } = useI18n();
@@ -21,14 +23,15 @@ export function NewMealSheet({ open, onClose, onSaved }: { open: boolean; onClos
 
   useEffect(() => {
     if (!open) {
-      setDesc("");
-      setPhoto(null);
-      setPreview(null);
-      setDay("hoy");
+      const timer = setTimeout(() => {
+        setDesc("");
+        setPhoto(null);
+        setPreview(null);
+        setDay("hoy");
+      }, 300);
+      return () => clearTimeout(timer);
     }
   }, [open]);
-
-  useEffect(() => () => { if (preview) URL.revokeObjectURL(preview); }, [preview]);
 
   async function onFile(f: File | undefined) {
     if (!f) return;
@@ -46,20 +49,12 @@ export function NewMealSheet({ open, onClose, onSaved }: { open: boolean; onClos
 
   async function submit(e: FormEvent) {
     e.preventDefault();
-    if (!photo) {
-      toast(t("Falta la foto 📸"), "error");
-      return;
-    }
+    if (!photo) return toast(t("Falta la foto"), "error");
     setBusy(true);
     try {
       const today = localToday();
-      await api.addMeal({
-        kind,
-        description: desc.trim(),
-        photo,
-        localDate: day === "ayer" ? addDays(today, -1) : today,
-      });
-      toast(t("¡Subido! 🌱"));
+      await api.addMeal({ kind, description: desc.trim(), photo, localDate: day === "ayer" ? addDays(today, -1) : today });
+      toast(t("Subida"));
       onSaved();
     } catch (err) {
       toast(errMsg(err, t), "error");
@@ -70,58 +65,68 @@ export function NewMealSheet({ open, onClose, onSaved }: { open: boolean; onClos
 
   return (
     <Sheet open={open} onClose={onClose} title={t("¿Qué comiste?")}>
-      <form className="form" onSubmit={submit}>
+      <form className="stack" onSubmit={submit}>
         <input ref={cameraRef} type="file" accept="image/*" capture="environment" hidden onChange={(e) => onFile(e.target.files?.[0])} />
         <input ref={galleryRef} type="file" accept="image/*" hidden onChange={(e) => onFile(e.target.files?.[0])} />
 
-        {preview ? (
-          <div className="photo-preview">
-            <img src={preview} alt="" />
-            <button type="button" className="btn btn-small btn-secondary" onClick={() => galleryRef.current?.click()}>{t("Cambiar")}</button>
-          </div>
-        ) : (
-          <div className="photo-pick">
-            <button type="button" className="photo-btn" onClick={() => cameraRef.current?.click()} disabled={processing}>
-              <span aria-hidden>📸</span>
-              {processing ? t("Procesando…") : t("Sacar foto")}
-            </button>
-            <button type="button" className="photo-btn alt" onClick={() => galleryRef.current?.click()} disabled={processing}>
-              <span aria-hidden>🖼️</span>
-              {t("Galería")}
-            </button>
-          </div>
-        )}
-
-        <div className="segmented" role="radiogroup" aria-label="kind">
-          {(Object.keys(KIND_META) as MealKind[]).map((k) => (
-            <button
-              type="button"
-              key={k}
-              role="radio"
-              aria-checked={kind === k}
-              className={kind === k ? "on" : ""}
-              onClick={() => setKind(k)}
+        <AnimatePresence mode="wait" initial={false}>
+          {preview ? (
+            <motion.div
+              key="preview"
+              className="photo-preview"
+              initial={{ opacity: 0, scale: 0.94, clipPath: "inset(12% 12% 12% 12% round 22px)" }}
+              animate={{ opacity: 1, scale: 1, clipPath: "inset(0% 0% 0% 0% round 22px)" }}
+              exit={{ opacity: 0, scale: 0.96 }}
+              transition={{ duration: 0.45, ease }}
             >
-              <span aria-hidden>{KIND_META[k].emoji}</span> {k === "ambas" ? t("Las dos") : t(KIND_META[k].label)}
-            </button>
-          ))}
-        </div>
+              <img src={preview} alt="" />
+              <motion.button type="button" className="btn btn-sm btn-soft" onClick={() => galleryRef.current?.click()} whileTap={press}>
+                <PiArrowsClockwiseBold aria-hidden />
+                {t("Cambiar")}
+              </motion.button>
+            </motion.div>
+          ) : (
+            <motion.div key="pick" className="photo-pick" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}>
+              <motion.button type="button" className="photo-btn main" onClick={() => cameraRef.current?.click()} disabled={processing} whileTap={press}>
+                <PiCameraBold aria-hidden />
+                {processing ? t("Procesando…") : t("Sacar foto")}
+              </motion.button>
+              <motion.button type="button" className="photo-btn alt" onClick={() => galleryRef.current?.click()} disabled={processing} whileTap={press}>
+                <PiImagesBold aria-hidden />
+                {t("Galería")}
+              </motion.button>
+            </motion.div>
+          )}
+        </AnimatePresence>
 
-        <label>
-          {t("¿Qué es?")}
-          <input value={desc} maxLength={140} onChange={(e) => setDesc(e.target.value)} placeholder={t("Ej: manzana verde, ensalada de tomate…")} />
+        <Segmented
+          label={t("Tipo")}
+          value={kind}
+          onChange={setKind}
+          options={(Object.keys(KIND_META) as MealKind[]).map((k) => ({ value: k, label: t(KIND_META[k].label), Icon: KIND_META[k].Icon }))}
+        />
+
+        <label className="field">
+          <span>{t("¿Qué es?")}</span>
+          <input className="input" value={desc} maxLength={140} onChange={(e) => setDesc(e.target.value)} placeholder={t("Ej: manzana verde, ensalada de tomate")} />
         </label>
 
         {yesterdayOk && (
-          <div className="segmented small" role="radiogroup" aria-label="day">
-            <button type="button" role="radio" aria-checked={day === "hoy"} className={day === "hoy" ? "on" : ""} onClick={() => setDay("hoy")}>{t("Hoy")}</button>
-            <button type="button" role="radio" aria-checked={day === "ayer"} className={day === "ayer" ? "on" : ""} onClick={() => setDay("ayer")}>{t("Ayer (hasta las 10)")}</button>
-          </div>
+          <Segmented
+            label={t("Día")}
+            value={day}
+            onChange={setDay}
+            options={[
+              { value: "hoy", label: t("Hoy") },
+              { value: "ayer", label: t("Ayer, hasta las 10") },
+            ]}
+          />
         )}
 
-        <button className="btn btn-primary" disabled={busy || processing || !photo}>
+        <motion.button className="btn btn-ink btn-block" disabled={busy || processing || !photo} whileTap={press}>
+          <PiPaperPlaneTiltBold aria-hidden />
           {busy ? t("Subiendo…") : t("Subir")}
-        </button>
+        </motion.button>
       </form>
     </Sheet>
   );

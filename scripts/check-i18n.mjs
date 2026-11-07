@@ -19,7 +19,7 @@ for (const f of files) {
   for (const m of src.matchAll(/\bt\(\s*"((?:[^"\\]|\\.)*)"/g)) used.add(m[1].replace(/\\"/g, '"'));
 }
 // textos que pasan por t() de forma indirecta
-for (const f of ["src/lib/push.ts", "src/screens/Me.tsx", "src/ui.tsx"]) {
+for (const f of ["src/lib/push.ts", "src/screens/Config.tsx", "src/ui.tsx"]) {
   const src = readFileSync(f, "utf8");
   for (const m of src.matchAll(/(?:: |return )"((?:[^"\\]|\\.)*)"[,;]/g)) if (keys.has(m[1]) === false && /[a-záéíóú]/i.test(m[1]) && /\s/.test(m[1])) used.add(m[1]);
 }

@@ -98,6 +98,7 @@ function streakOf(uid: string): Streak {
 const wait = (ms = 250) => new Promise((r) => setTimeout(r, ms));
 let signedIn = false;
 let meId = LUCA;
+let needsSetup = false; // demo: un email que empieza con "nuevo" muestra la pantalla de primera vez
 const listeners = new Set<() => void>();
 const emit = () => listeners.forEach((f) => f());
 
@@ -106,11 +107,13 @@ export function createDemoApi(): Api {
     demo: true,
     async getUserId() { return signedIn ? meId : null; },
     onAuthChange(cb) { listeners.add(cb); return () => listeners.delete(cb); },
-    async signIn(email) { await wait(); meId = email.startsWith("giovanna") ? GIO : LUCA; signedIn = true; emit(); },
+    async sendLoginEmail(email) { await wait(400); const e = email.toLowerCase(); meId = e.startsWith("gio") ? GIO : LUCA; needsSetup = e.startsWith("nuevo"); },
+    async verifyLoginCode() { await wait(); signedIn = true; emit(); },
     async signOut() { signedIn = false; emit(); },
 
     async getMe() {
       if (!signedIn) return null;
+      if (needsSetup) return { userId: meId, email: "nuevo@demo", profile: null, couple: null, partner: null };
       return {
         userId: meId, email: meId === LUCA ? "luca@demo" : "giovanna@demo",
         profile: profiles.find((p) => p.id === meId)!,
@@ -118,7 +121,7 @@ export function createDemoApi(): Api {
         partner: profiles.find((p) => p.id !== meId)!,
       };
     },
-    async ensureProfile({ lang }) { profiles = profiles.map((p) => (p.id === meId ? { ...p, lang } : p)); },
+    async createProfile({ name, lang }) { needsSetup = false; profiles = profiles.map((p) => (p.id === meId ? { ...p, name, lang } : p)); },
     async updateProfile(patch) { await wait(150); profiles = profiles.map((p) => (p.id === meId ? { ...p, ...patch } : p)); },
     async listStreaks() { return [streakOf(LUCA), streakOf(GIO)]; },
 

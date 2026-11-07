@@ -1,12 +1,12 @@
 # Brote 🌱
 
-App web mobile (PWA) para Luca y Giovanna: cada día cada uno sube una foto de la fruta o verdura que comió.
+App web mobile (PWA) para dos: cada día cada uno sube una foto de la fruta o verdura que comió.
 Si alguien pasa un día sin subir nada (o el otro le rechaza la foto), **el otro suma 1 punto**. Los puntos se canjean en la tienda.
 
-- **Feed**: lo que sube cada uno, con foto. El otro lo aprueba (✅ Vale) o lo rechaza (❌ No cuenta).
-- **Tienda**: premios editables con costo en puntos. Al canjear, al otro le llega un aviso y queda como "pendiente" hasta que se cumple.
-- **Semana**: calendario de la semana, resúmenes de semanas pasadas y movimientos de puntos.
-- **Yo**: perfil, idioma (Español / Português BR) y notificaciones.
+- **Marcador**: los dos puestos (toldo, avatar y cartel con puntos y racha), quién cumplió hoy y el feed de fotos. El otro marca cada foto como "Vale" o "No cuenta".
+- **Tienda**: arranca vacía; ustedes cargan, editan y borran los premios. Al canjear, al otro le llega un aviso y queda "pendiente" hasta que se cumple.
+- **Semana**: rachas (actual y mejor), calendario de la semana, resúmenes y movimientos de puntos.
+- **Config**: editor de avatar (forma, color, ojos, boca, extras), nombre, idioma (Español / Português BR) y notificaciones.
 
 ## Cómo funciona el tiempo (hora argentina)
 
@@ -31,7 +31,7 @@ npm install
 npm run dev
 ```
 
-Sin `.env` arranca en modo demo, con datos de mentira y sin contraseña.
+Sin `.env` arranca en modo demo, con datos inventados: poné cualquier email (si empieza con "gio" entrás como Giovanna) y cualquier código de 6 dígitos.
 
 ## Puesta en marcha real
 
@@ -39,8 +39,19 @@ Sin `.env` arranca en modo demo, con datos de mentira y sin contraseña.
 
 1. Creá un proyecto en [supabase.com](https://supabase.com).
 2. **SQL Editor** → pegá y ejecutá [supabase/migrations/20261106000000_brote.sql](supabase/migrations/20261106000000_brote.sql).
-3. **Authentication → Sign In / Providers**: desactivá *Allow new users to sign up* (la app es cerrada).
-4. **Authentication → Users → Add user**: creá las 2 cuentas (email + contraseña, marcá *Auto Confirm User*).
+3. **Authentication → Sign In / Providers**: dejá activo *Email* y desactivá *Allow new users to sign up* (la app es cerrada: solo entran las cuentas que crees).
+4. **Authentication → Users → Add user → Create new user**: creá las 2 cuentas con sus emails (marcá *Auto Confirm User*; la contraseña no se usa).
+5. **Authentication → Emails → Magic Link**: agregá el código al mail para poder entrar desde la app instalada (en iPhone el link abre Safari, no la app). Por ejemplo:
+
+   ```html
+   <h2>Entrar a Brote</h2>
+   <p>Tu código: <strong>{{ .Token }}</strong></p>
+   <p>O tocá <a href="{{ .ConfirmationURL }}">este link</a>.</p>
+   ```
+
+6. **Authentication → URL Configuration**: *Site URL* = la URL de la app en Vercel, y agregala también en *Redirect URLs*.
+
+La primera vez que cada uno entra elige su nombre y su idioma; el avatar y el nombre se cambian después en Config.
 
 ### 2. Claves para notificaciones
 
@@ -73,12 +84,12 @@ Editá las dos primeras variables de [supabase/cron.sql](supabase/cron.sql) (URL
 ### 5. Frontend en Vercel
 
 Importá el repo en Vercel (detecta Vite solo) y cargá las variables de [.env.example](.env.example):
-`VITE_SUPABASE_URL`, `VITE_SUPABASE_ANON_KEY`, `VITE_VAPID_PUBLIC_KEY`, `VITE_LUCA_EMAIL`, `VITE_GIOVANNA_EMAIL`.
+`VITE_SUPABASE_URL`, `VITE_SUPABASE_ANON_KEY`, `VITE_VAPID_PUBLIC_KEY`.
 
 ### 6. En los celulares
 
-- **iPhone** (iOS 16.4+): abrir en Safari → Compartir → *Agregar a pantalla de inicio* → abrir desde el ícono → **Yo → Activar notificaciones**. En iPhone las notificaciones solo funcionan con la app instalada así.
-- **Android**: abrir en Chrome → *Instalar app* → **Yo → Activar notificaciones**.
+- **iPhone** (iOS 16.4+): abrir en Safari → Compartir → *Agregar a pantalla de inicio* → abrir desde el ícono → entrar con el email y el **código** del mail → **Config → Activar notificaciones**. En iPhone las notificaciones solo funcionan con la app instalada así.
+- **Android**: abrir en Chrome → *Instalar app* → entrar → **Config → Activar notificaciones**.
 
 ## Probar las tareas programadas a mano
 
@@ -95,5 +106,6 @@ Otras acciones: `close_day` (opcional `"date":"2026-11-05"`), `weekly_summary`, 
 - `npm run test:sql`: corre la migración en un Postgres embebido y prueba puntos, permisos, tienda, resumen y limpieza de fotos.
 - `npm run check:i18n`: avisa si algún texto de la UI no tiene traducción al portugués.
 - Textos: [src/i18n.tsx](src/i18n.tsx) (la clave es el texto en español).
-- Estilos: [src/styles.css](src/styles.css); los colores están como variables arriba de todo.
-- Perfiles (nombre, emoji, idioma por defecto): [src/config.ts](src/config.ts).
+- Estilos: [src/styles.css](src/styles.css); los colores están como variables arriba de todo. Las piezas del mundo Feira (toldo, cartel, números que ruedan) están en [src/components/feira.tsx](src/components/feira.tsx).
+- Avatar: [src/avatar/model.ts](src/avatar/model.ts) (formas, colores, ojos, bocas, extras) y [src/avatar/Avatar.tsx](src/avatar/Avatar.tsx) (dibujo y animación).
+- Íconos: [react-icons](https://react-icons.github.io/react-icons/), familia Phosphor (`react-icons/pi`). Animaciones: [Motion](https://motion.dev).

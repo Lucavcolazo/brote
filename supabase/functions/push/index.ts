@@ -1,4 +1,4 @@
-// Brote 🌱 — edge function "push"
+// Brote — edge function "push"
 // La llaman la base (triggers) y pg_cron con el header x-cron-secret.
 // Manda las notificaciones push y corre las tareas programadas.
 //
@@ -29,39 +29,39 @@ type Person = { id: string; name: string; emoji: string; lang: Lang; couple_id: 
 
 // ---------- textos (cada uno recibe en su idioma) ----------
 const KIND: Record<Lang, Record<string, string>> = {
-  es: { fruta: "fruta 🍎", verdura: "verdura 🥦", ambas: "fruta y verdura 🥗" },
-  pt: { fruta: "fruta 🍎", verdura: "verdura 🥦", ambas: "fruta e verdura 🥗" },
+  es: { fruta: "fruta", verdura: "verdura", ambas: "fruta y verdura" },
+  pt: { fruta: "fruta", verdura: "verdura", ambas: "fruta e verdura" },
 };
 
 const MSG = {
   meal: (l: Lang, who: Person, kind: string, desc: string): Push => ({
-    title: l === "pt" ? `${who.emoji} ${who.name} comeu ${KIND.pt[kind]}` : `${who.emoji} ${who.name} comió ${KIND.es[kind]}`,
+    title: l === "pt" ? `${who.name} comeu ${KIND.pt[kind]}` : `${who.name} comió ${KIND.es[kind]}`,
     body: desc
       ? `“${desc}” — ${l === "pt" ? "entra pra conferir a foto" : "entrá a chequear la foto"}`
-      : l === "pt" ? "Entra pra conferir a foto 👀" : "Entrá a chequear la foto 👀",
+      : l === "pt" ? "Entra pra conferir a foto " : "Entrá a chequear la foto ",
   }),
   reviewed: (l: Lang, by: Person, kind: string, ok: boolean): Push =>
     l === "pt"
-      ? { title: ok ? `✅ ${by.name} aprovou sua ${KIND.pt[kind]}` : `❌ ${by.name} disse que sua ${KIND.pt[kind]} não vale`, body: ok ? "Boa!" : "Se não postar outra, esse dia não conta 😬" }
-      : { title: ok ? `✅ ${by.name} aprobó tu ${KIND.es[kind]}` : `❌ ${by.name} dice que tu ${KIND.es[kind]} no cuenta`, body: ok ? "¡Bien ahí!" : "Si no subís otra, ese día no cuenta 😬" },
+      ? { title: ok ? `${by.name} aprovou sua ${KIND.pt[kind]}` : `${by.name} disse que sua ${KIND.pt[kind]} não vale`, body: ok ? "Boa!" : "Se não postar outra, esse dia não conta." }
+      : { title: ok ? `${by.name} aprobó tu ${KIND.es[kind]}` : `${by.name} dice que tu ${KIND.es[kind]} no cuenta`, body: ok ? "¡Bien ahí!" : "Si no subís otra, ese día no cuenta." },
   redeemed: (l: Lang, who: Person, r: { emoji: string; title: string; cost: number }): Push =>
     l === "pt"
-      ? { title: `${r.emoji} ${who.name} trocou: ${r.title}`, body: `Gastou ${r.cost} ponto${r.cost === 1 ? "" : "s"}. Agora você tem que cumprir 😅` }
-      : { title: `${r.emoji} ${who.name} canjeó: ${r.title}`, body: `Gastó ${r.cost} punto${r.cost === 1 ? "" : "s"}. Te toca cumplir 😅` },
+      ? { title: `${who.name} trocou: ${r.title}`, body: `Gastou ${r.cost} ponto${r.cost === 1 ? "" : "s"}. Agora você tem que cumprir.` }
+      : { title: `${who.name} canjeó: ${r.title}`, body: `Gastó ${r.cost} punto${r.cost === 1 ? "" : "s"}. Te toca cumplir.` },
   fulfilled: (l: Lang, r: { emoji: string; title: string }): Push =>
-    l === "pt" ? { title: `✔️ Troca cumprida: ${r.emoji} ${r.title}`, body: "Aproveita 💚" } : { title: `✔️ Canje cumplido: ${r.emoji} ${r.title}`, body: "Disfrutalo 💚" },
+    l === "pt" ? { title: `Troca cumprida: ${r.title}`, body: "Aproveita." } : { title: `Canje cumplido: ${r.title}`, body: "Disfrutalo." },
   remindMidday: (l: Lang): Push =>
-    l === "pt" ? { title: "🥦 Já comeu algo verde hoje?", body: "Tira uma foto e posta 📸" } : { title: "🥦 ¿Ya comiste algo verde hoy?", body: "Sacale una foto y subila 📸" },
+    l === "pt" ? { title: "Já comeu algo verde hoje?", body: "Tira uma foto e posta." } : { title: "¿Ya comiste algo verde hoy?", body: "Sacale una foto y subila." },
   remindNight: (l: Lang, partner: string | null): Push =>
     l === "pt"
-      ? { title: "⏰ Última chamada", body: partner ? `Hoje você não postou fruta nem verdura. Senão, ${partner} ganha 1 ponto.` : "Hoje você não postou fruta nem verdura." }
-      : { title: "⏰ Última llamada", body: partner ? `Hoy no subiste fruta ni verdura. Si no, ${partner} se lleva 1 punto.` : "Hoy no subiste fruta ni verdura." },
+      ? { title: "Última chamada", body: partner ? `Hoje você não postou fruta nem verdura. Senão, ${partner} ganha 1 ponto.` : "Hoje você não postou fruta nem verdura." }
+      : { title: "Última llamada", body: partner ? `Hoy no subiste fruta ni verdura. Si no, ${partner} se lleva 1 punto.` : "Hoy no subiste fruta ni verdura." },
   missed: (l: Lang, beneficiary: string): Push =>
-    l === "pt" ? { title: "😬 Ontem não teve fruta nem verdura", body: `+1 ponto para ${beneficiary}.` } : { title: "😬 Ayer no hubo fruta ni verdura", body: `+1 punto para ${beneficiary}.` },
+    l === "pt" ? { title: "Ontem não teve fruta nem verdura", body: `+1 ponto para ${beneficiary}.` } : { title: "Ayer no hubo fruta ni verdura", body: `+1 punto para ${beneficiary}.` },
   earned: (l: Lang, failed: string): Push =>
-    l === "pt" ? { title: "🎉 Você ganhou 1 ponto!", body: `${failed} não comeu nada verde ontem.` } : { title: "🎉 ¡Sumaste 1 punto!", body: `${failed} ayer no comió nada verde.` },
+    l === "pt" ? { title: "Você ganhou 1 ponto!", body: `${failed} não comeu nada verde ontem.` } : { title: "¡Sumaste 1 punto!", body: `${failed} ayer no comió nada verde.` },
   summary: (l: Lang, members: Array<{ name: string; days_ok: number; balance: number }>): Push => ({
-    title: l === "pt" ? "📊 Resumo da semana" : "📊 Resumen de la semana",
+    title: l === "pt" ? "Resumo da semana" : "Resumen de la semana",
     body: members.map((m) => `${m.name}: ${m.days_ok}/7 ${l === "pt" ? "dias" : "días"} · ${m.balance} pts`).join("  |  "),
   }),
 };

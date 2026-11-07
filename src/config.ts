@@ -1,28 +1,8 @@
-import type { Lang } from "./i18n";
+import { DEFAULT_AVATARS, normalizeAvatar, type AvatarConfig } from "./avatar/model";
+import type { Profile } from "./api/types";
 
-// App cerrada: solo estos dos perfiles. Los emails van en el .env (VITE_LUCA_EMAIL / VITE_GIOVANNA_EMAIL)
-// y tienen que coincidir con las cuentas creadas en Supabase > Authentication > Users.
-export interface AppUser {
-  key: "luca" | "giovanna";
-  name: string;
-  emoji: string;
-  email: string;
-  defaultLang: Lang;
+// Avatar inicial hasta que cada uno arme el suyo en Config.
+export function avatarOf(p: Pick<Profile, "name" | "avatar"> | null | undefined): AvatarConfig {
+  const fallback = p?.name.toLowerCase().startsWith("gio") ? DEFAULT_AVATARS.giovanna : DEFAULT_AVATARS.luca;
+  return normalizeAvatar(p?.avatar, fallback);
 }
-
-export const USERS: AppUser[] = [
-  {
-    key: "luca",
-    name: "Luca",
-    emoji: "🦊",
-    email: (import.meta.env.VITE_LUCA_EMAIL as string | undefined) ?? "",
-    defaultLang: "es",
-  },
-  {
-    key: "giovanna",
-    name: "Giovanna",
-    emoji: "🌻",
-    email: (import.meta.env.VITE_GIOVANNA_EMAIL as string | undefined) ?? "",
-    defaultLang: "pt",
-  },
-];

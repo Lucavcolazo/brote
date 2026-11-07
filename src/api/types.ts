@@ -97,12 +97,15 @@ export interface Api {
   demo: boolean;
   getUserId(): Promise<string | null>;
   onAuthChange(cb: () => void): () => void;
-  signIn(email: string, password: string): Promise<void>;
+  /** Manda el mail de acceso (magic link + código de 6 dígitos). Solo para cuentas ya creadas. */
+  sendLoginEmail(email: string): Promise<void>;
+  /** Entra con el código del mail (sirve en la app instalada, donde el link abriría Safari). */
+  verifyLoginCode(email: string, code: string): Promise<void>;
   signOut(): Promise<void>;
 
   getMe(): Promise<Me | null>;
-  /** Crea el perfil la primera vez (app cerrada) o actualiza el idioma elegido al entrar. */
-  ensureProfile(input: { name: string; emoji: string; lang: Profile["lang"] }): Promise<void>;
+  /** Crea el perfil la primera vez que alguien entra (app cerrada: máximo 2). */
+  createProfile(input: { name: string; lang: Profile["lang"] }): Promise<void>;
   updateProfile(patch: Partial<Pick<Profile, "name" | "lang" | "avatar">>): Promise<void>;
   listStreaks(): Promise<Streak[]>;
 

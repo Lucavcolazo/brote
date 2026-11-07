@@ -1,0 +1,696 @@
+{
+  "schemaVersion": 2,
+  "generatedAt": "2026-11-07T00:15:19.970473+00:00",
+  "title": "Design System: Brote",
+  "extensions": {
+    "colorMeta": {
+      "ground": {
+        "role": "neutral",
+        "displayName": "Ground",
+        "canonical": "#ffffff",
+        "tonalRamp": [
+          "#0b0b0b",
+          "#262626",
+          "#454545",
+          "#666666",
+          "#898989",
+          "#aeaeae",
+          "#d1d1d1",
+          "#eeeeee"
+        ]
+      },
+      "canvas": {
+        "role": "neutral",
+        "displayName": "Lona Canvas",
+        "canonical": "#f4f3ef",
+        "tonalRamp": [
+          "#0b0b0a",
+          "#272625",
+          "#464542",
+          "#676663",
+          "#8a8986",
+          "#afaeab",
+          "#d1d1cf",
+          "#efeeed"
+        ]
+      },
+      "ink": {
+        "role": "neutral",
+        "displayName": "Warm Ink",
+        "canonical": "#1e1b16",
+        "tonalRamp": [
+          "#0c0b09",
+          "#282623",
+          "#474540",
+          "#696660",
+          "#8c8983",
+          "#b0ada9",
+          "#d3d1cd",
+          "#f0eeeb"
+        ]
+      },
+      "ink-2": {
+        "role": "neutral",
+        "displayName": "Ink Two",
+        "canonical": "#5f5a52",
+        "tonalRamp": [
+          "#0d0b08",
+          "#292622",
+          "#48443e",
+          "#6a655e",
+          "#8d8881",
+          "#b1ada7",
+          "#d4d0cb",
+          "#f1eeea"
+        ]
+      },
+      "ink-3": {
+        "role": "neutral",
+        "displayName": "Ink Three",
+        "canonical": "#8a847a",
+        "tonalRamp": [
+          "#0d0b08",
+          "#292621",
+          "#49443d",
+          "#6b655c",
+          "#8e887f",
+          "#b2ada6",
+          "#d4d0ca",
+          "#f1eee9"
+        ]
+      },
+      "line": {
+        "role": "neutral",
+        "displayName": "Hairline",
+        "canonical": "#e6e3dc",
+        "tonalRamp": [
+          "#0c0b09",
+          "#282623",
+          "#474540",
+          "#686660",
+          "#8b8983",
+          "#b0aea9",
+          "#d2d1cd",
+          "#f0eeeb"
+        ]
+      },
+      "fluo": {
+        "role": "primary",
+        "displayName": "Placard Fluo",
+        "canonical": "#ffe14a",
+        "tonalRamp": [
+          "#0f0b00",
+          "#2e2601",
+          "#504508",
+          "#766609",
+          "#9d8922",
+          "#c3ae4d",
+          "#e2d288",
+          "#fcf0b6"
+        ]
+      },
+      "fluo-ink": {
+        "role": "primary",
+        "displayName": "Placard Ink",
+        "canonical": "#3a3000",
+        "tonalRamp": [
+          "#0f0b00",
+          "#2c260e",
+          "#4d4525",
+          "#70663d",
+          "#938a62",
+          "#b6ae8d",
+          "#d8d1b6",
+          "#f4efd9"
+        ]
+      },
+      "vale": {
+        "role": "secondary",
+        "displayName": "Vale Green",
+        "canonical": "#2f9e57",
+        "tonalRamp": [
+          "#001004",
+          "#003013",
+          "#045427",
+          "#1d7940",
+          "#439f60",
+          "#7ac18c",
+          "#a9e1b6",
+          "#cffcd9"
+        ]
+      },
+      "nocuenta": {
+        "role": "secondary",
+        "displayName": "No Cuenta Red",
+        "canonical": "#d93a26",
+        "tonalRamp": [
+          "#1e0100",
+          "#4c0803",
+          "#7f180b",
+          "#b92311",
+          "#e05541",
+          "#fc8875",
+          "#ffbfb3",
+          "#fee9e5"
+        ]
+      },
+      "nocuenta-soft": {
+        "role": "secondary",
+        "displayName": "No Cuenta Blush",
+        "canonical": "#fde6e2",
+        "tonalRamp": [
+          "#100908",
+          "#2e2422",
+          "#4f413f",
+          "#74615e",
+          "#978481",
+          "#baaaa7",
+          "#dbcecb",
+          "#f6ecea"
+        ]
+      },
+      "crate-fruta": {
+        "role": "tertiary",
+        "displayName": "Crate Tomato",
+        "canonical": "#e8432e",
+        "tonalRamp": [
+          "#1f0000",
+          "#4d0601",
+          "#811508",
+          "#bc1d0a",
+          "#e2523e",
+          "#fe8673",
+          "#fcc1b6",
+          "#fee9e5"
+        ]
+      },
+      "crate-ambas": {
+        "role": "tertiary",
+        "displayName": "Crate Tangerine",
+        "canonical": "#f27a1f",
+        "tonalRamp": [
+          "#170600",
+          "#401a00",
+          "#6d3204",
+          "#9f4a00",
+          "#d0681a",
+          "#ed9560",
+          "#fdc2a1",
+          "#ffeade"
+        ]
+      },
+      "tie-band": {
+        "role": "tertiary",
+        "displayName": "Tie Grey",
+        "canonical": "#c9c4ba",
+        "tonalRamp": [
+          "#0c0b08",
+          "#282621",
+          "#48453e",
+          "#6a665d",
+          "#8d8980",
+          "#b1ada6",
+          "#d3d1cb",
+          "#f0eee9"
+        ]
+      },
+      "debt-tint": {
+        "role": "tertiary",
+        "displayName": "Debt Tint",
+        "canonical": "#fff6d1",
+        "tonalRamp": [
+          "#0e0b02",
+          "#2b2615",
+          "#4b452d",
+          "#6e6648",
+          "#91896c",
+          "#b4ae95",
+          "#d6d1bd",
+          "#f3efde"
+        ]
+      },
+      "lightbox-scrim": {
+        "role": "neutral",
+        "displayName": "Lightbox Scrim",
+        "canonical": "rgba(20, 18, 15, 0.94)",
+        "tonalRamp": [
+          "#0c0b0a",
+          "#282624",
+          "#474542",
+          "#686662",
+          "#8b8985",
+          "#b0adaa",
+          "#d2d1ce",
+          "#efeeec"
+        ]
+      },
+      "player-tomato": {
+        "role": "tertiary",
+        "displayName": "Player Tomato",
+        "canonical": "#e8432e",
+        "tonalRamp": [
+          "#1f0000",
+          "#4d0601",
+          "#811508",
+          "#bc1d0a",
+          "#e2523e",
+          "#fe8673",
+          "#fcc1b6",
+          "#fee9e5"
+        ]
+      },
+      "player-tangerine": {
+        "role": "tertiary",
+        "displayName": "Player Tangerine",
+        "canonical": "#f27a1f",
+        "tonalRamp": [
+          "#170600",
+          "#401a00",
+          "#6d3204",
+          "#9f4a00",
+          "#d0681a",
+          "#ed9560",
+          "#fdc2a1",
+          "#ffeade"
+        ]
+      },
+      "player-lemon": {
+        "role": "tertiary",
+        "displayName": "Player Lemon",
+        "canonical": "#f6c928",
+        "tonalRamp": [
+          "#100b00",
+          "#302501",
+          "#544306",
+          "#7c6304",
+          "#a4861e",
+          "#caab4a",
+          "#e8cf87",
+          "#fdeec0"
+        ]
+      },
+      "player-lime": {
+        "role": "tertiary",
+        "displayName": "Player Lime",
+        "canonical": "#9bcb2f",
+        "tonalRamp": [
+          "#070e00",
+          "#1e2c01",
+          "#394d08",
+          "#547209",
+          "#739822",
+          "#99bd5a",
+          "#c0de91",
+          "#e1f9bd"
+        ]
+      },
+      "player-leaf": {
+        "role": "tertiary",
+        "displayName": "Player Leaf",
+        "canonical": "#2f9e57",
+        "tonalRamp": [
+          "#001004",
+          "#003013",
+          "#045427",
+          "#1d7940",
+          "#439f60",
+          "#7ac18c",
+          "#a9e1b6",
+          "#cffcd9"
+        ]
+      },
+      "player-teal": {
+        "role": "tertiary",
+        "displayName": "Player Teal",
+        "canonical": "#1e9c95",
+        "tonalRamp": [
+          "#000e0d",
+          "#012d2b",
+          "#07504c",
+          "#057670",
+          "#379b94",
+          "#74beb7",
+          "#a4ded9",
+          "#ccf9f5"
+        ]
+      },
+      "player-sky": {
+        "role": "tertiary",
+        "displayName": "Player Sky",
+        "canonical": "#3d8be0",
+        "tonalRamp": [
+          "#000b1d",
+          "#00264d",
+          "#044581",
+          "#1a67b4",
+          "#498cd7",
+          "#7bb2f1",
+          "#b1d4fe",
+          "#e4f0ff"
+        ]
+      },
+      "player-plum": {
+        "role": "tertiary",
+        "displayName": "Player Plum",
+        "canonical": "#6b4bb8",
+        "tonalRamp": [
+          "#0e0227",
+          "#2a1752",
+          "#4a3282",
+          "#6c4fb5",
+          "#8e75d9",
+          "#b19ff3",
+          "#d2c9fb",
+          "#efecfd"
+        ]
+      },
+      "player-berry": {
+        "role": "tertiary",
+        "displayName": "Player Berry",
+        "canonical": "#d23c7c",
+        "tonalRamp": [
+          "#1c010b",
+          "#4b0225",
+          "#7e0a43",
+          "#b12364",
+          "#d75387",
+          "#f486ac",
+          "#febbd0",
+          "#fee8ee"
+        ]
+      },
+      "player-ink": {
+        "role": "tertiary",
+        "displayName": "Player Ink",
+        "canonical": "#2a2622",
+        "tonalRamp": [
+          "#0c0b09",
+          "#282623",
+          "#484441",
+          "#6a6561",
+          "#8d8884",
+          "#b1ada9",
+          "#d3d0cd",
+          "#f0eeeb"
+        ]
+      }
+    },
+    "typographyMeta": {
+      "display": {
+        "displayName": "Display",
+        "purpose": "Placard point numerals only."
+      },
+      "wordmark": {
+        "displayName": "Wordmark",
+        "purpose": "The BROTE wordmark in the top band and login."
+      },
+      "headline": {
+        "displayName": "Headline",
+        "purpose": "Uppercase page titles; 24px on sheets."
+      },
+      "title": {
+        "displayName": "Title",
+        "purpose": "Uppercase section headings and stall names."
+      },
+      "body-strong": {
+        "displayName": "Body Strong",
+        "purpose": "Meal descriptions, card and prize titles."
+      },
+      "body": {
+        "displayName": "Body",
+        "purpose": "Default reading text."
+      },
+      "label": {
+        "displayName": "Label",
+        "purpose": "Crate tags, leader badge, verdict stamps."
+      },
+      "field-label": {
+        "displayName": "Field Label",
+        "purpose": "Form field captions in Ink Two."
+      },
+      "wordmark-hero": {
+        "displayName": "Wordmark Hero",
+        "purpose": "Login wordmark only."
+      },
+      "sheet-title": {
+        "displayName": "Sheet Title",
+        "purpose": "Bottom-sheet titles."
+      },
+      "code": {
+        "displayName": "Code",
+        "purpose": "Login code input only."
+      },
+      "count-small": {
+        "displayName": "Count Small",
+        "purpose": "Point amounts, stepper value, placard unit."
+      },
+      "body-small": {
+        "displayName": "Body Small",
+        "purpose": "Secondary text and small controls."
+      },
+      "micro": {
+        "displayName": "Micro",
+        "purpose": "Ramp floor: tab labels, demo strip, leader badge."
+      }
+    },
+    "shadows": [
+      {
+        "name": "shadow-1",
+        "value": "0 1px 2px rgba(30, 27, 22, 0.06), 0 6px 18px -10px rgba(30, 27, 22, 0.22)",
+        "purpose": "Rest lift: feed cards, prize rows, today pills, segmented thumb, leader badge."
+      },
+      {
+        "name": "shadow-2",
+        "value": "0 2px 4px rgba(30, 27, 22, 0.06), 0 18px 40px -16px rgba(30, 27, 22, 0.32)",
+        "purpose": "Overlay lift: sheets and toasts."
+      },
+      {
+        "name": "placard",
+        "value": "0 2px 3px rgba(30, 27, 22, 0.12), 0 12px 20px -12px rgba(30, 27, 22, 0.4)",
+        "purpose": "Hanging score and wallet placards."
+      },
+      {
+        "name": "fab",
+        "value": "0 2px 4px rgba(30, 27, 22, 0.12), 0 14px 26px -12px rgba(30, 27, 22, 0.55)",
+        "purpose": "Raised centre upload button."
+      },
+      {
+        "name": "awning-drop",
+        "value": "drop-shadow(0 6px 6px rgba(30, 27, 22, 0.12))",
+        "purpose": "filter on stall awnings; valance uses 0 3px 3px."
+      },
+      {
+        "name": "focus-ring",
+        "value": "outline: 3px solid #1e1b16; outline-offset: 2px",
+        "purpose": "Every focus-visible element."
+      }
+    ],
+    "motion": [
+      {
+        "name": "ease",
+        "value": "cubic-bezier(0.16, 1, 0.3, 1)",
+        "purpose": "Default ease-out for tweens and CSS transitions (--ease-out); MotionConfig default 0.3s."
+      },
+      {
+        "name": "spring",
+        "value": "spring stiffness 420, damping 34",
+        "purpose": "UI state: segmented thumb, tab marker, switch knob, toasts, press."
+      },
+      {
+        "name": "press",
+        "value": "scale 0.96",
+        "purpose": "whileTap on every tappable; upload button 0.9 with -4deg."
+      },
+      {
+        "name": "screen-change",
+        "value": "opacity + x 18px, 0.32s ease; exit 0.14s",
+        "purpose": "Tab-to-tab transition in the direction of travel."
+      },
+      {
+        "name": "sheet",
+        "value": "spring stiffness 380, damping 38; exit 0.24s ease",
+        "purpose": "Bottom sheet enter and drag dismiss (110px or 600px/s)."
+      },
+      {
+        "name": "awning-unroll",
+        "value": "spring stiffness 170, damping 17; scaleY 0.05 to 1; 80ms stagger",
+        "purpose": "Awnings unroll once on mount."
+      },
+      {
+        "name": "placard-swing",
+        "value": "rotate 11deg decaying over 1.5s (7deg on first show), easeOut",
+        "purpose": "Placard swings around the awning edge when points change."
+      },
+      {
+        "name": "number-roll",
+        "value": "spring stiffness 300, damping 28; y 100%",
+        "purpose": "Rolling numerals in the direction of change."
+      },
+      {
+        "name": "avatar-morph",
+        "value": "spring stiffness 260, damping 24, mass 0.9",
+        "purpose": "Avatar body shape morph between radial profiles."
+      },
+      {
+        "name": "avatar-breath",
+        "value": "scaleY 1.018 / scaleX 0.992, 3.6s loop",
+        "purpose": "Idle life in alive mode; off under reduced motion."
+      },
+      {
+        "name": "reduced-motion",
+        "value": "MotionConfig reducedMotion=\"user\"; CSS transitions 0.01ms",
+        "purpose": "Reduced-motion users keep state changes without travel."
+      }
+    ],
+    "knownDrift": [],
+    "masks": [
+      {
+        "name": "valance-mask",
+        "value": "var(--ink) / transparent",
+        "purpose": "Alpha stops for the valance scallop mask; only alpha matters, not paint."
+      }
+    ],
+    "breakpoints": [
+      {
+        "name": "column",
+        "value": "640px",
+        "purpose": "App becomes a centred 520px column with a hairline outline."
+      }
+    ]
+  },
+  "components": [
+    {
+      "name": "Ink Button",
+      "kind": "button",
+      "refersTo": "button-ink",
+      "description": "Default commit action: full ink pill.",
+      "html": "<button class=\"ds-btn ds-btn-ink\"><svg viewBox=\"0 0 256 256\" width=\"20\" height=\"20\" fill=\"currentColor\"><path d=\"M208 52h-28.6l-13.7-20.4A12 12 0 0 0 155.7 26h-55.4a12 12 0 0 0-10 5.6L76.6 52H48a28 28 0 0 0-28 28v112a28 28 0 0 0 28 28h160a28 28 0 0 0 28-28V80a28 28 0 0 0-28-28Zm4 140a4 4 0 0 1-4 4H48a4 4 0 0 1-4-4V80a4 4 0 0 1 4-4h35a12 12 0 0 0 10-5.3L106.7 50h42.6l13.7 20.7A12 12 0 0 0 173 76h35a4 4 0 0 1 4 4ZM128 88a46 46 0 1 0 46 46 46.1 46.1 0 0 0-46-46Zm0 68a22 22 0 1 1 22-22 22 22 0 0 1-22 22Z\"/></svg>Subí lo de hoy</button>",
+      "css": ".ds-btn { font-family: var(--font, 'Archivo', ui-sans-serif, system-ui, sans-serif); display: inline-flex; align-items: center; justify-content: center; gap: 8px; min-height: 52px; padding: 0 22px; border: 0; border-radius: 999px; font-size: 16px; font-weight: 750; cursor: pointer; transition: transform 0.2s cubic-bezier(0.16,1,0.3,1); } .ds-btn-ink { background: var(--ink, #1e1b16); color: #fff; } .ds-btn:active { transform: scale(0.96); } .ds-btn:focus-visible { outline: 3px solid var(--ink, #1e1b16); outline-offset: 2px; }"
+    },
+    {
+      "name": "Verdict Pair",
+      "kind": "button",
+      "refersTo": "button-vale",
+      "description": "Vale and No cuenta buttons shown together on a partner post.",
+      "html": "<div class=\"ds-verdict\"><button class=\"ds-vbtn ds-vbtn-vale\"><svg viewBox=\"0 0 256 256\" width=\"18\" height=\"18\" fill=\"currentColor\"><path d=\"M232.5 75.5l-128 128a12 12 0 0 1-17 0l-56-56a12 12 0 1 1 17-17L96 178l119.5-119.5a12 12 0 0 1 17 17Z\"/></svg>Vale</button><button class=\"ds-vbtn ds-vbtn-no\"><svg viewBox=\"0 0 256 256\" width=\"18\" height=\"18\" fill=\"currentColor\"><path d=\"M208.5 191.5a12 12 0 0 1-17 17L128 145l-63.5 63.5a12 12 0 0 1-17-17L111 128 47.5 64.5a12 12 0 0 1 17-17L128 111l63.5-63.5a12 12 0 0 1 17 17L145 128Z\"/></svg>No cuenta</button></div>",
+      "css": ".ds-verdict { display: flex; gap: 10px; } .ds-vbtn { font-family: var(--font, 'Archivo', ui-sans-serif, system-ui, sans-serif); flex: 1; display: inline-flex; align-items: center; justify-content: center; gap: 8px; min-height: 52px; padding: 0 22px; border: 0; border-radius: 999px; font-size: 16px; font-weight: 750; cursor: pointer; transition: transform 0.2s cubic-bezier(0.16,1,0.3,1); } .ds-vbtn-vale { background: var(--vale, #2f9e57); color: #fff; } .ds-vbtn-no { background: #fff; color: var(--nocuenta, #d93a26); box-shadow: inset 0 0 0 2px var(--nocuenta, #d93a26); } .ds-vbtn:active { transform: scale(0.96); } .ds-vbtn:focus-visible { outline: 3px solid var(--ink, #1e1b16); outline-offset: 2px; }"
+    },
+    {
+      "name": "Soft Button",
+      "kind": "button",
+      "refersTo": "button-soft",
+      "description": "Secondary and cancel actions on Canvas.",
+      "html": "<button class=\"ds-btn-soft\">Cancelar</button>",
+      "css": ".ds-btn-soft { font-family: var(--font, 'Archivo', ui-sans-serif, system-ui, sans-serif); display: inline-flex; align-items: center; justify-content: center; min-height: 52px; padding: 0 22px; border: 0; border-radius: 999px; background: var(--canvas, #f4f3ef); color: var(--ink, #1e1b16); font-size: 16px; font-weight: 750; cursor: pointer; transition: transform 0.2s cubic-bezier(0.16,1,0.3,1); } .ds-btn-soft:active { transform: scale(0.96); } .ds-btn-soft:focus-visible { outline: 3px solid var(--ink, #1e1b16); outline-offset: 2px; }"
+    },
+    {
+      "name": "Text Field",
+      "kind": "input",
+      "refersTo": "input",
+      "description": "Canvas field that turns white with an ink ring on focus.",
+      "html": "<label class=\"ds-field\"><span>Premio</span><input class=\"ds-input\" placeholder=\"Cena afuera\"></label>",
+      "css": ".ds-field { font-family: var(--font, 'Archivo', ui-sans-serif, system-ui, sans-serif); display: grid; gap: 7px; } .ds-field > span { font-size: 13px; font-weight: 750; font-stretch: 80%; letter-spacing: 0.05em; text-transform: uppercase; color: var(--ink-2, #5f5a52); } .ds-input { font: inherit; width: 100%; min-height: 52px; padding: 0 16px; font-size: 17px; border: 0; border-radius: 16px; background: var(--canvas, #f4f3ef); color: var(--ink, #1e1b16); outline: none; box-shadow: inset 0 0 0 2px transparent; transition: box-shadow 0.18s cubic-bezier(0.16,1,0.3,1), background 0.18s; } .ds-input::placeholder { color: var(--ink-3, #8a847a); } .ds-input:focus { background: #fff; box-shadow: inset 0 0 0 2px var(--ink, #1e1b16); }"
+    },
+    {
+      "name": "Crate Label",
+      "kind": "chip",
+      "refersTo": "crate-fruta",
+      "description": "Meal-kind tag: narrow caps on solid crate colour.",
+      "html": "<div class=\"ds-crates\"><span class=\"ds-crate ds-crate-fruta\">Fruta</span><span class=\"ds-crate ds-crate-verdura\">Verdura</span><span class=\"ds-crate ds-crate-ambas\">Las dos</span></div>",
+      "css": ".ds-crates { display: flex; gap: 8px; } .ds-crate { font-family: var(--font, 'Archivo', ui-sans-serif, system-ui, sans-serif); display: inline-flex; align-items: center; padding: 5px 9px; border-radius: 6px; font-size: 12px; font-weight: 850; font-stretch: 72%; letter-spacing: 0.07em; text-transform: uppercase; color: #fff; } .ds-crate-fruta { background: #e8432e; } .ds-crate-verdura { background: var(--vale, #2f9e57); } .ds-crate-ambas { background: #f27a1f; }"
+    },
+    {
+      "name": "Score Placard",
+      "kind": "custom",
+      "refersTo": "placard",
+      "description": "Fluo price placard hanging on two strings: points and streak.",
+      "html": "<div class=\"ds-placard-wrap\"><div class=\"ds-placard\"><span class=\"ds-placard-num\"><span class=\"ds-digits\">5</span><span class=\"ds-unit\">pts</span></span><span class=\"ds-streak\"><svg viewBox=\"0 0 256 256\" width=\"15\" height=\"15\" fill=\"#e8432e\"><path d=\"M143.4 7.8a8 8 0 0 0-9.4 1.4L104.7 38.4 79.2 9.7a8 8 0 0 0-11.8.3C35.4 46.4 24 82.4 24 108a104 104 0 0 0 208 0c0-50.6-37.3-87.7-88.6-100.2ZM128 216a40 40 0 0 1-40-40c0-25.7 25.9-48.5 40-58.6 14.1 10.1 40 32.9 40 58.6a40 40 0 0 1-40 40Z\"/></svg>Racha 2</span></div></div>",
+      "css": ".ds-placard-wrap { position: relative; display: inline-block; margin-top: 40px; transform-origin: 50% -40px; transition: transform 0.6s cubic-bezier(0.16,1,0.3,1); } .ds-placard-wrap:hover { transform: rotate(4deg); } .ds-placard-wrap::before, .ds-placard-wrap::after { content: \"\"; position: absolute; top: -40px; width: 2px; height: 44px; background: #1e1b16; opacity: 0.5; } .ds-placard-wrap::before { left: 18%; } .ds-placard-wrap::after { right: 18%; } .ds-placard { font-family: var(--font, 'Archivo', ui-sans-serif, system-ui, sans-serif); min-width: 132px; padding: 10px 14px 11px; border-radius: 6px; background: var(--fluo, #ffe14a); color: var(--fluo-ink, #3a3000); box-shadow: 0 2px 3px rgba(30,27,22,0.12), 0 12px 20px -12px rgba(30,27,22,0.4); display: grid; justify-items: center; } .ds-placard-num { display: flex; align-items: baseline; gap: 4px; font-weight: 900; font-stretch: 62%; line-height: 0.82; font-variant-numeric: tabular-nums; } .ds-digits { font-size: 72px; letter-spacing: -0.02em; } .ds-unit { font-size: 18px; font-stretch: 75%; letter-spacing: 0.04em; } .ds-streak { margin-top: 6px; display: inline-flex; align-items: center; gap: 4px; font-size: 13px; font-weight: 800; }"
+    },
+    {
+      "name": "Valance",
+      "kind": "custom",
+      "refersTo": "valance",
+      "description": "Striped scalloped awning edge under every section title, in the viewer colour.",
+      "html": "<div class=\"ds-valance\" style=\"--stripe:#3D8BE0\"></div>",
+      "css": ".ds-valance { width: 320px; height: 22px; background: repeating-linear-gradient(90deg, var(--stripe, #1e1b16) 0 14px, #fff 14px 28px); -webkit-mask: linear-gradient(#000 0 15px, #0000 15px), radial-gradient(7px at 7px 15px, #000 98%, #0000) 0 0 / 14px 100% repeat-x; mask: linear-gradient(#000 0 15px, #0000 15px), radial-gradient(7px at 7px 15px, #000 98%, #0000) 0 0 / 14px 100% repeat-x; box-shadow: inset 0 4px 0 #1e1b16, inset 0 6px 0 rgba(30,27,22,0.08); filter: drop-shadow(0 3px 3px rgba(30,27,22,0.12)); }"
+    },
+    {
+      "name": "Segmented Control",
+      "kind": "nav",
+      "refersTo": "segmented",
+      "description": "Canvas pill track with a sliding white thumb.",
+      "html": "<div class=\"ds-seg\" role=\"radiogroup\"><button role=\"radio\" aria-checked=\"true\">Español</button><button role=\"radio\" aria-checked=\"false\">Português</button></div>",
+      "css": ".ds-seg { font-family: var(--font, 'Archivo', ui-sans-serif, system-ui, sans-serif); display: flex; padding: 4px; border-radius: 999px; background: var(--canvas, #f4f3ef); width: 300px; } .ds-seg button { font: inherit; flex: 1; min-height: 42px; border: 0; border-radius: 999px; background: none; font-size: 14px; font-weight: 700; color: var(--ink-2, #5f5a52); cursor: pointer; transition: color 0.2s, background 0.3s cubic-bezier(0.16,1,0.3,1); } .ds-seg button:hover { color: var(--ink, #1e1b16); } .ds-seg button[aria-checked=\"true\"] { background: #fff; color: var(--ink, #1e1b16); box-shadow: 0 1px 2px rgba(30,27,22,0.06), 0 6px 18px -10px rgba(30,27,22,0.22); } .ds-seg button:focus-visible { outline: 3px solid var(--ink, #1e1b16); outline-offset: 2px; }"
+    },
+    {
+      "name": "Tab Bar",
+      "kind": "nav",
+      "refersTo": "tab",
+      "description": "Blurred white bar, four tabs and a raised fluo upload button; active tab gets an ink marker.",
+      "html": "<nav class=\"ds-tabbar\"><button class=\"ds-tab on\"><i></i>Marcador</button><button class=\"ds-tab\">Tienda</button><button class=\"ds-fab\" aria-label=\"Subir comida\"><svg viewBox=\"0 0 256 256\" width=\"20\" height=\"20\" fill=\"currentColor\"><path d=\"M208 52h-28.6l-13.7-20.4A12 12 0 0 0 155.7 26h-55.4a12 12 0 0 0-10 5.6L76.6 52H48a28 28 0 0 0-28 28v112a28 28 0 0 0 28 28h160a28 28 0 0 0 28-28V80a28 28 0 0 0-28-28Zm4 140a4 4 0 0 1-4 4H48a4 4 0 0 1-4-4V80a4 4 0 0 1 4-4h35a12 12 0 0 0 10-5.3L106.7 50h42.6l13.7 20.7A12 12 0 0 0 173 76h35a4 4 0 0 1 4 4ZM128 88a46 46 0 1 0 46 46 46.1 46.1 0 0 0-46-46Zm0 68a22 22 0 1 1 22-22 22 22 0 0 1-22 22Z\"/></svg></button><button class=\"ds-tab\">Semana</button><button class=\"ds-tab\">Config</button></nav>",
+      "css": ".ds-tabbar { font-family: var(--font, 'Archivo', ui-sans-serif, system-ui, sans-serif); display: grid; grid-template-columns: repeat(5, 1fr); align-items: start; width: 375px; height: 72px; padding: 0 6px; background: rgba(255,255,255,0.92); backdrop-filter: blur(18px) saturate(1.6); box-shadow: 0 -1px 0 var(--line, #e6e3dc); } .ds-tab { font: inherit; position: relative; border: 0; background: none; padding: 30px 0 6px; font-size: 11px; font-weight: 750; color: var(--ink-2, #5f5a52); cursor: pointer; } .ds-tab.on { color: var(--ink, #1e1b16); } .ds-tab i { position: absolute; top: 0; left: 50%; margin-left: -13px; width: 26px; height: 4px; border-radius: 0 0 4px 4px; background: var(--ink, #1e1b16); } .ds-fab { justify-self: center; width: 60px; height: 60px; margin-top: -14px; border: 0; border-radius: 20px; display: grid; place-items: center; background: var(--fluo, #ffe14a); color: var(--fluo-ink, #3a3000); box-shadow: 0 2px 4px rgba(30,27,22,0.12), 0 14px 26px -12px rgba(30,27,22,0.55); cursor: pointer; transition: transform 0.2s cubic-bezier(0.16,1,0.3,1); } .ds-fab svg { width: 28px; height: 28px; } .ds-fab:active { transform: scale(0.9) rotate(-4deg); } .ds-tab:focus-visible, .ds-fab:focus-visible { outline: 3px solid var(--ink, #1e1b16); outline-offset: 2px; }"
+    }
+  ],
+  "narrative": {
+    "northStar": "The Two-Stall Feira",
+    "overview": "Brote is a street market with exactly two stalls. Each partner owns one: a scalloped, striped awning in their avatar colour, their living avatar under it, and a fluorescent yellow price placard hanging on two strings that carries their points and streak. The score is not a chart; it is the market itself. Whoever leads tints the whole top band with their colour, and a tie drops it to a neutral grey canvas. Every other screen inherits the market through a striped valance under its title, crate-label tags for meal kinds, and placard-yellow price tags in the store.\n\nThe ground is plain white and the ink is a warm near-black; everything loud in the system is either a player's colour, placard fluo, or a verdict colour. Type is a single variable family, Archivo, pushed narrow and heavy for anything that names or counts (titles, numerals, tags) and left at normal width for reading. Surfaces are soft and rounded, lifted with warm, low shadows; buttons are full pills. Density is phone-first and generous: 16px gutters, 52px controls, one column.\n\nMotion is part of the material, not decoration. Awnings unroll once on open, placards swing on their strings when points change, numerals roll, sheets ride a spring, and the active tab marker slides between tabs. All of it runs through Motion with `reducedMotion=\"user\"`, so reduced-motion users get state without travel.",
+    "keyCharacteristics": [
+      "Two player colours drive awnings, valances and the leader band; the system has no fixed brand hue beyond ink and fluo.",
+      "Fluorescent yellow placard paper with condensed, 900-weight Archivo numerals is the signature object.",
+      "Light only: white ground, warm canvas sections, warm ink.",
+      "Narrow uppercase Archivo for names and counts; normal-width Archivo for reading.",
+      "Pill buttons, rounded cards, warm soft shadows, Phosphor bold icons.",
+      "Smooth spring motion everywhere, honouring reduced-motion preferences."
+    ],
+    "rules": [
+      {
+        "name": "The Players Own the Colour Rule",
+        "body": "Identity colour comes only from the two avatar colours. A surface that needs a player hue reads it from that player's avatar, never from a fixed accent.",
+        "section": "colors"
+      },
+      {
+        "name": "The Fluo Is Paper Rule",
+        "body": "Fluo is the placard material. It marks the score, prices and the act of posting; it is never a generic highlight, and its text is always Placard Ink.",
+        "section": "colors"
+      },
+      {
+        "name": "The Verdict Pair Rule",
+        "body": "Vale Green and No Cuenta Red mean \"counts\" and \"doesn't count\" (plus success and error). Do not borrow them for decoration.",
+        "section": "colors"
+      },
+      {
+        "name": "The Narrow Means Signage Rule",
+        "body": "Narrow widths (62 to 80%) and uppercase are for things that name or count: titles, numerals, tags, stamps, stall names. Reading text stays at normal width and sentence case.",
+        "section": "typography"
+      },
+      {
+        "name": "The Tabular Count Rule",
+        "body": "Every changing number (points, steppers, codes, schedules) uses tabular numerals so values roll and align without jitter.",
+        "section": "typography"
+      },
+      {
+        "name": "The Warm Shadow Rule",
+        "body": "Every shadow is tinted with Warm Ink and has a negative spread on its long layer, so objects feel lifted off paper rather than outlined.",
+        "section": "elevation"
+      }
+    ],
+    "dos": [
+      "**Do** take every identity colour from the players' avatar colours, and tint the top band with the leader's colour at 20% into white (tie: Tie Grey).",
+      "**Do** put scores, prices and the upload action on Placard Fluo with Placard Ink text and condensed 900-weight Archivo numerals.",
+      "**Do** open every section screen with an uppercase 30px headline followed by the striped valance in the viewer's colour.",
+      "**Do** use Phosphor icons from react-icons/pi in the bold weight, switching to the fill variant only for the active tab and for status glyphs (flame, crown, check, warning).",
+      "**Do** animate with Motion using the shared tokens: ease-out cubic-bezier(0.16, 1, 0.3, 1), spring 420/34 for UI state, press scale 0.96, and keep MotionConfig reducedMotion=\"user\".",
+      "**Do** use tabular numerals for every number that changes."
+    ],
+    "donts": [
+      "**Don't** add a dark theme or dark surfaces beyond Warm Ink controls; the system is light only.",
+      "**Don't** use emojis anywhere; meal kinds, verdicts and status use Phosphor icons and crate labels.",
+      "**Don't** add taglines, kickers or explanatory footnotes above or below titles.",
+      "**Don't** show score as progress rings or charts on grey cards; the score lives on placards under awnings.",
+      "**Don't** use Ink Three for small text; it is for icons, placeholders and borders.",
+      "**Don't** use Vale Green or No Cuenta Red for anything but the verdicts, success and errors.",
+      "**Don't** use grey or hard-offset shadows; shadows are warm, soft and spread negatively."
+    ]
+  }
+}

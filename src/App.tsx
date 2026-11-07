@@ -1,17 +1,32 @@
+import { AnimatePresence, MotionConfig, motion } from "motion/react";
 import { useCallback, useEffect, useMemo, useState } from "react";
-import { api, type Me, type Meal, type PointEvent, type Redemption, type StoreItem, type WeeklySummary } from "./api";
+import type { IconType } from "react-icons";
+import {
+  PiCalendarDotsBold,
+  PiCalendarDotsFill,
+  PiCameraBold,
+  PiSlidersHorizontalBold,
+  PiSlidersHorizontalFill,
+  PiStorefrontBold,
+  PiStorefrontFill,
+  PiTicketBold,
+  PiTicketFill,
+} from "react-icons/pi";
+import { api, type Me, type Meal, type PointEvent, type Redemption, type StoreItem, type Streak, type WeeklySummary } from "./api";
+import { avatarOf } from "./config";
+import { I18nProvider, useI18n } from "./i18n";
 import { addDays, localToday } from "./lib/dates";
 import { refreshPushSubscription } from "./lib/push";
-import { I18nProvider, errorKey, useI18n } from "./i18n";
-import { AuthScreen, takePendingProfile } from "./screens/Auth";
-import { Feed } from "./screens/Feed";
-import { MeScreen } from "./screens/Me";
+import { LoginScreen, SetupScreen } from "./screens/Auth";
+import { ConfigScreen } from "./screens/Config";
+import { Home } from "./screens/Home";
 import { NewMealSheet } from "./screens/NewMeal";
 import { Store } from "./screens/Store";
 import { Week } from "./screens/Week";
-import { ToastProvider } from "./ui";
+import { ToastProvider, ease, press, spring } from "./ui";
 
-export type Tab = "feed" | "tienda" | "semana" | "yo";
+export type Tab = "marcador" | "tienda" | "semana" | "config";
+const TABS: Tab[] = ["marcador", "tienda", "semana", "config"];
 
 export interface AppData {
   meals: Meal[];
@@ -19,53 +34,52 @@ export interface AppData {
   items: StoreItem[];
   redemptions: Redemption[];
   summaries: WeeklySummary[];
+  streaks: Streak[];
 }
 
 export interface Ctx {
   me: Me & { profile: NonNullable<Me["profile"]> };
   data: AppData;
   balances: Record<string, number>;
+  streakOf: (uid: string) => Streak;
   reload: () => Promise<void>;
+  reloadMe: () => Promise<void>;
   go: (tab: Tab) => void;
+  openComposer: () => void;
 }
 
-const EMPTY: AppData = { meals: [], points: [], items: [], redemptions: [], summaries: [] };
+const EMPTY: AppData = { meals: [], points: [], items: [], redemptions: [], summaries: [], streaks: [] };
 
 function readTab(): Tab {
   const t = new URLSearchParams(location.search).get("tab");
-  return t === "tienda" || t === "semana" || t === "yo" ? t : "feed";
+  if (t === "feed") return "marcador";
+  if (t === "yo") return "config";
+  return TABS.includes(t as Tab) ? (t as Tab) : "marcador";
 }
 
 export default function App() {
   return (
-    <I18nProvider>
-      <ToastProvider>
-        <Root />
-      </ToastProvider>
-    </I18nProvider>
+    <MotionConfig reducedMotion="user" transition={{ duration: 0.3, ease }}>
+      <I18nProvider>
+        <ToastProvider>
+          <Root />
+        </ToastProvider>
+      </I18nProvider>
+    </MotionConfig>
   );
 }
 
 function Root() {
-  const { t, setLang } = useI18n();
+  const { setLang } = useI18n();
   const [me, setMe] = useState<Me | null | undefined>(undefined);
-  const [setupError, setSetupError] = useState("");
 
   const loadMe = useCallback(async () => {
     try {
-      let m = await api.getMe();
-      // Recién logueado: crear el perfil (primera vez) y guardar el idioma elegido.
-      const pending = m && takePendingProfile();
-      if (m && pending) {
-        await api.ensureProfile(pending);
-        m = await api.getMe();
-      }
+      const m = await api.getMe();
       if (m?.profile) setLang(m.profile.lang);
-      setSetupError("");
       setMe(m);
     } catch (e) {
       console.error(e);
-      setSetupError(e instanceof Error ? e.message : String(e));
       setMe(null);
     }
   }, [setLang]);
@@ -75,52 +89,61 @@ function Root() {
     return api.onAuthChange(loadMe);
   }, [loadMe]);
 
-  if (me === undefined) return <div className="center-screen"><div className="brand-mark pulse">🌱</div></div>;
-  if (me === null || !me.profile?.couple_id) {
-    return (
-      <>
-        <AuthScreen />
-        {setupError && <p className="error center">{t(errorKey(setupError))}</p>}
-      </>
-    );
-  }
-  return <Main me={me as Ctx["me"]} reloadMe={loadMe} />;
+  const stage = me === undefined ? "boot" : me === null ? "login" : !me.profile?.couple_id ? "setup" : "main";
+
+  return (
+    <AnimatePresence mode="wait" initial={false}>
+      <motion.div
+        key={stage}
+        initial={{ opacity: 0 }}
+        animate={{ opacity: 1 }}
+        exit={{ opacity: 0, transition: { duration: 0.15 } }}
+        transition={{ duration: 0.35, ease }}
+      >
+        {stage === "boot" && <div className="boot" aria-busy="true" />}
+        {stage === "login" && <LoginScreen />}
+        {stage === "setup" && <SetupScreen onDone={loadMe} />}
+        {stage === "main" && <Main me={me as Ctx["me"]} reloadMe={loadMe} />}
+      </motion.div>
+    </AnimatePresence>
+  );
 }
 
 function Main({ me, reloadMe }: { me: Ctx["me"]; reloadMe: () => Promise<void> }) {
   const { t } = useI18n();
   const [tab, setTab] = useState<Tab>(readTab);
+  const [dir, setDir] = useState(0);
   const [data, setData] = useState<AppData>(EMPTY);
-  const [loading, setLoading] = useState(true);
+  const [loaded, setLoaded] = useState(false);
   const [composer, setComposer] = useState(() => new URLSearchParams(location.search).get("nuevo") === "1");
 
   const reload = useCallback(async () => {
     const since = addDays(localToday(), -20);
-    const [meals, points, items, redemptions, summaries] = await Promise.all([
+    const [meals, points, items, redemptions, summaries, streaks] = await Promise.all([
       api.listMeals(since),
       api.listPointEvents(),
       api.listStoreItems(),
       api.listRedemptions(),
       api.listSummaries(),
+      api.listStreaks(),
     ]);
-    setData({ meals, points, items, redemptions, summaries });
-    setLoading(false);
+    setData({ meals, points, items, redemptions, summaries, streaks });
+    setLoaded(true);
   }, []);
 
   useEffect(() => {
     reload().catch((e) => {
       console.error(e);
-      setLoading(false);
+      setLoaded(true);
     });
     refreshPushSubscription();
-    let t: ReturnType<typeof setTimeout>;
+    let timer: ReturnType<typeof setTimeout>;
     const unsub = api.subscribeChanges(() => {
-      clearTimeout(t);
-      t = setTimeout(() => reload().catch(console.error), 400);
+      clearTimeout(timer);
+      timer = setTimeout(() => reload().catch(console.error), 350);
     });
     const onVisible = () => document.visibilityState === "visible" && reload().catch(console.error);
     document.addEventListener("visibilitychange", onVisible);
-    // Al tocar una notificación con la app abierta, el service worker nos pide cambiar de pestaña.
     const onMsg = (e: MessageEvent) => {
       if (e.data?.type === "open") {
         const u = new URL(e.data.url);
@@ -137,11 +160,15 @@ function Main({ me, reloadMe }: { me: Ctx["me"]; reloadMe: () => Promise<void> }
     };
   }, [reload]);
 
-  const go = useCallback((t: Tab) => {
-    setTab(t);
-    history.replaceState(null, "", t === "feed" ? "/" : `/?tab=${t}`);
-    window.scrollTo({ top: 0 });
-  }, []);
+  const go = useCallback(
+    (next: Tab) => {
+      setDir(TABS.indexOf(next) > TABS.indexOf(tab) ? 1 : -1);
+      setTab(next);
+      history.replaceState(null, "", next === "marcador" ? "/" : `/?tab=${next}`);
+      window.scrollTo({ top: 0 });
+    },
+    [tab],
+  );
 
   const balances = useMemo(() => {
     const b: Record<string, number> = { [me.userId]: 0 };
@@ -150,37 +177,53 @@ function Main({ me, reloadMe }: { me: Ctx["me"]; reloadMe: () => Promise<void> }
     return b;
   }, [data.points, me]);
 
-  const ctx: Ctx = { me, data, balances, reload, go };
+  const streakOf = useCallback(
+    (uid: string) => data.streaks.find((s) => s.user_id === uid) ?? { user_id: uid, current_streak: 0, best_streak: 0 },
+    [data.streaks],
+  );
+
+  const ctx: Ctx = { me, data, balances, streakOf, reload, reloadMe, go, openComposer: () => setComposer(true) };
+  const myColor = avatarOf(me.profile).color;
 
   return (
     <div className="app">
-      {api.demo && <div className="demo-banner">{t("Modo demo · los datos son de mentira")}</div>}
-      <main className="content">
-        {loading ? (
-          <div className="skeleton-list">
-            <div className="skeleton" />
-            <div className="skeleton tall" />
-            <div className="skeleton tall" />
-          </div>
-        ) : tab === "feed" ? (
-          <Feed ctx={ctx} onNew={() => setComposer(true)} />
-        ) : tab === "tienda" ? (
-          <Store ctx={ctx} />
-        ) : tab === "semana" ? (
-          <Week ctx={ctx} />
-        ) : (
-          <MeScreen ctx={ctx} reloadMe={reloadMe} />
-        )}
-      </main>
+      {api.demo && <div className="demo-banner">{t("Modo demo · datos inventados")}</div>}
 
-      <nav className="tabbar" aria-label="Secciones">
-        <TabBtn tab="feed" cur={tab} go={go} icon="🏡" label={t("Feed")} />
-        <TabBtn tab="tienda" cur={tab} go={go} icon="🎁" label={t("Tienda")} />
-        <button className="fab" onClick={() => setComposer(true)} aria-label={t("Subir comida")}>
-          <span>＋</span>
-        </button>
-        <TabBtn tab="semana" cur={tab} go={go} icon="📊" label={t("Semana")} />
-        <TabBtn tab="yo" cur={tab} go={go} icon={me.profile.emoji} label={t("Yo")} />
+      <AnimatePresence mode="popLayout" initial={false} custom={dir}>
+        <motion.main
+          key={tab}
+          className="screen"
+          custom={dir}
+          variants={{
+            enter: (d: number) => ({ opacity: 0, x: d * 28 }),
+            center: { opacity: 1, x: 0 },
+            exit: (d: number) => ({ opacity: 0, x: d * -18, transition: { duration: 0.14 } }),
+          }}
+          initial="enter"
+          animate="center"
+          exit="exit"
+          transition={{ duration: 0.32, ease }}
+        >
+          {!loaded ? null : tab === "marcador" ? (
+            <Home ctx={ctx} />
+          ) : tab === "tienda" ? (
+            <Store ctx={ctx} />
+          ) : tab === "semana" ? (
+            <Week ctx={ctx} />
+          ) : (
+            <ConfigScreen ctx={ctx} />
+          )}
+        </motion.main>
+      </AnimatePresence>
+
+      <nav className="tabbar" aria-label={t("Secciones")} data-color={myColor}>
+        <TabBtn tab="marcador" cur={tab} go={go} Icon={PiStorefrontBold} IconOn={PiStorefrontFill} label={t("Marcador")} />
+        <TabBtn tab="tienda" cur={tab} go={go} Icon={PiTicketBold} IconOn={PiTicketFill} label={t("Tienda")} />
+        <motion.button className="fab" onClick={() => setComposer(true)} aria-label={t("Subir comida")} whileTap={{ scale: 0.9, rotate: -4 }} transition={spring}>
+          <PiCameraBold />
+        </motion.button>
+        <TabBtn tab="semana" cur={tab} go={go} Icon={PiCalendarDotsBold} IconOn={PiCalendarDotsFill} label={t("Semana")} />
+        <TabBtn tab="config" cur={tab} go={go} Icon={PiSlidersHorizontalBold} IconOn={PiSlidersHorizontalFill} label={t("Config")} />
       </nav>
 
       <NewMealSheet
@@ -191,7 +234,7 @@ function Main({ me, reloadMe }: { me: Ctx["me"]; reloadMe: () => Promise<void> }
         }}
         onSaved={async () => {
           setComposer(false);
-          go("feed");
+          if (tab !== "marcador") go("marcador");
           await reload();
         }}
       />
@@ -199,11 +242,13 @@ function Main({ me, reloadMe }: { me: Ctx["me"]; reloadMe: () => Promise<void> }
   );
 }
 
-function TabBtn({ tab, cur, go, icon, label }: { tab: Tab; cur: Tab; go: (t: Tab) => void; icon: string; label: string }) {
+function TabBtn({ tab, cur, go, Icon, IconOn, label }: { tab: Tab; cur: Tab; go: (t: Tab) => void; Icon: IconType; IconOn: IconType; label: string }) {
+  const on = cur === tab;
   return (
-    <button className={`tab ${cur === tab ? "on" : ""}`} onClick={() => go(tab)} aria-current={cur === tab ? "page" : undefined}>
-      <span className="tab-icon" aria-hidden>{icon}</span>
+    <motion.button className={`tab ${on ? "on" : ""}`} onClick={() => go(tab)} aria-current={on ? "page" : undefined} whileTap={press}>
+      {on && <motion.span layoutId="tab-dot" className="tab-dot" transition={spring} />}
+      {on ? <IconOn aria-hidden /> : <Icon aria-hidden />}
       <span className="tab-label">{label}</span>
-    </button>
+    </motion.button>
   );
 }
