@@ -242,7 +242,7 @@ export function ConfigScreen({ ctx }: { ctx: Ctx }) {
           <ul className="schedule">
             <li><b>12:30</b> {t("recordatorio si no subiste nada")}</li>
             <li><b>21:30</b> {t("última llamada")}</li>
-            <li><b>10:00</b> {t("se cierra el día anterior y se reparten puntos")}</li>
+            <li><b>8:00</b> {t("se cierra el día anterior: lo que nadie revisó se aprueba solo y se reparten puntos")}</li>
             <li><b>{t("Dom 21:00")}</b> {t("resumen semanal")}</li>
           </ul>
         </div>

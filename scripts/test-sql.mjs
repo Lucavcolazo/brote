@@ -7,6 +7,7 @@ const readMigration = (f) =>
   readFileSync(new URL(`../supabase/migrations/${f}`, import.meta.url), "utf8").replace(/^create extension.*$/gim, "");
 const migration = readMigration("20261106000000_brote.sql");
 const reactions = readMigration("20261107000000_reactions.sql");
+const reglas = readMigration("20261108000000_reglas.sql");
 
 const stubs = `
 create role anon nologin; create role authenticated nologin; create role service_role nologin bypassrls;
@@ -58,6 +59,7 @@ const all = async (sql, params) => (await db.query(sql, params)).rows;
 await db.exec(stubs);
 await db.exec(migration);
 await db.exec(reactions);
+await db.exec(reglas);
 ok(true, "migraciones aplicadas");
 
 const A = "00000000-0000-0000-0000-00000000000a";
@@ -101,6 +103,7 @@ await as(A, () => db.query(`insert into public.meals (kind, description, photo_p
 ok(true, "A carga una fruta hoy");
 await as(A, () => expectError(db.query(`insert into public.meals (kind, photo_path) values ('fruta', null)`), /row-level security|violates/, "sin foto no se puede"));
 await as(A, () => expectError(db.query(`insert into public.meals (kind, photo_path, local_date) values ('fruta', $1, current_date - 5)`, [path]), /row-level security/, "no se puede cargar hace 5 días"));
+await as(A, () => expectError(db.query(`insert into public.meals (kind, photo_path, local_date) values ('fruta', $1, private.local_today() - 1)`, [path]), /row-level security/, "lo de ayer ya no se puede cargar (el día termina a las 00)"));
 await as(A, () => expectError(db.query(`insert into public.meals (kind, photo_path) values ('fruta', $1)`, [`${couple.id}/${B}/x.jpg`]), /row-level security/, "no se puede subir en la carpeta del otro"));
 await as(A, () => expectError(db.query(`insert into public.meals (kind, photo_path, review) values ('fruta', $1, 'ok')`, [path]), /permission denied/, "no se puede autoaprobar"));
 const calls = await all(`select * from net.calls`);
@@ -135,7 +138,10 @@ await db.exec(`
     ('${B}', '${couple.id}', 'fruta',   '${couple.id}/${B}/rech.jpg', date '${today}' - 3);
   update public.meals set review = 'rejected' where local_date = date '${today}' - 3;
 `);
+await as(A, () => expectError(db.query(`select public.review_meal(id, 'ok') from public.meals where local_date = date '${today}' - 3`), /review_closed/, "después de las 8:00 del día siguiente ya no se puede revisar"));
 const d1 = await all(`select * from public.srv_close_day(date '${today}' - 1)`);
+const auto = await one(`select review, review_auto from public.meals where local_date = date '${today}' - 1`);
+ok(auto.review === "ok" && auto.review_auto === true, "la comida de ayer que nadie revisó se aprobó sola al cerrar");
 ok(d1.length === 1 && d1[0].failed_name === "Giovanna" && d1[0].beneficiary_name === "Luca", "ayer: Giovanna no comió → +1 para Luca");
 const d1again = await all(`select * from public.srv_close_day(date '${today}' - 1)`);
 ok(d1again.length === 0, "cerrar el mismo día dos veces no duplica puntos");

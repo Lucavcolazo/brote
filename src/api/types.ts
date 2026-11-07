@@ -37,6 +37,8 @@ export interface Meal {
   photo_deleted_at: string | null;
   local_date: string;
   review: Verdict | null;
+  /** true si se aprobó sola al cerrar el día porque nadie la revisó. */
+  review_auto?: boolean;
   created_at: string;
   reactions: MealReaction[];
 }

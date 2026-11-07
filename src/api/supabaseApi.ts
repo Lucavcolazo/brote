@@ -84,7 +84,8 @@ export function createSupabaseApi(url: string, key: string): Api {
       const rows = check(
         await sb
           .from("meals")
-          .select("id, user_id, kind, description, photo_path, photo_deleted_at, local_date, review, created_at")
+          // "*" para no romper el feed si todavía falta correr alguna migración (ej: review_auto).
+          .select("*")
           .gte("local_date", sinceDate)
           .order("created_at", { ascending: false })
           .limit(200),

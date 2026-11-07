@@ -31,9 +31,8 @@ select cron.schedule('brote-recordatorio-mediodia', '30 15 * * *',
 select cron.schedule('brote-recordatorio-noche', '30 0 * * *',
   $$ select private.call_edge('remind', '{"slot":"night"}'::jsonb) $$);
 
--- 10:00 ART todos los días: se cierra el día anterior y se reparten los puntos.
--- (Hasta esa hora se puede cargar lo que comiste ayer.)
-select cron.schedule('brote-cierre-del-dia', '0 13 * * *',
+-- 8:00 ART todos los días: se cierra el día anterior (lo que nadie revisó se aprueba solo) y se reparten los puntos.
+select cron.schedule('brote-cierre-del-dia', '0 11 * * *',
   $$ select private.call_edge('close_day') $$);
 
 -- Domingo 21:00 ART: resumen semanal con puntos y comidas.

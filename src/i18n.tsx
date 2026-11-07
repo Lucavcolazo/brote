@@ -67,7 +67,6 @@ const PT: Record<string, string> = {
   "Tipo": "Tipo",
   "Ej: manzana verde, ensalada de tomate": "Ex: maçã verde, salada de tomate",
   "Día": "Dia",
-  "Ayer, hasta las 10": "Ontem, até as 10h",
   "Listo": "Pronto",
   "{name} tiene {n}": "{name} tem {n}",
   "Le debés a {name}": "Você deve para {name}",
@@ -146,6 +145,12 @@ const PT: Record<string, string> = {
   "Procesando…": "Processando…",
   "Cambiar": "Trocar",
   "Reaccionar": "Reagir",
+  "Sacar otra": "Tirar outra",
+  "Si no se revisa, mañana a las 8:00 se aprueba sola.": "Se ninguém revisar, amanhã às 8:00 ela é aprovada sozinha.",
+  "Si no se revisa antes de las 8:00, se aprueba sola.": "Se ninguém revisar até as 8:00, ela é aprovada sozinha.",
+  "Se aprobó sola": "Aprovada sozinha",
+  "se cierra el día anterior: lo que nadie revisó se aprueba solo y se reparten puntos": "fecha o dia anterior: o que ninguém revisou é aprovado sozinho e os pontos são distribuídos",
+  "Ese día ya se cerró": "Esse dia já foi fechado",
   "Cargando": "Carregando",
   "Reacciones": "Reações",
   "Sacar tu reacción": "Tirar sua reação",
@@ -157,7 +162,6 @@ const PT: Record<string, string> = {
   "Fruta + verdura": "Fruta + verdura",
   "¿Qué es?": "O que é?",
   "Ej: manzana verde, ensalada de tomate…": "Ex: maçã verde, salada de tomate…",
-  "Ayer (hasta las 10)": "Ontem (até as 10h)",
   "Subir": "Postar",
   "Subiendo…": "Postando…",
   "Cerrar": "Fechar",
@@ -219,7 +223,6 @@ const PT: Record<string, string> = {
   "Falta configurar VITE_VAPID_PUBLIC_KEY.": "Falta configurar VITE_VAPID_PUBLIC_KEY.",
   "recordatorio si no subiste nada": "lembrete se você não postou nada",
   "última llamada": "última chamada",
-  "se cierra el día anterior y se reparten puntos": "fecha o dia anterior e distribui os pontos",
   "Dom 21:00": "Dom 21:00",
   "resumen semanal": "resumo semanal",
   "Cada vez que tu pareja sube algo o canjea un premio": "Toda vez que seu par posta algo ou troca um prêmio",
@@ -256,6 +259,7 @@ export function errorKey(raw: string): string {
   if (/not_pending/.test(raw)) return "Ese canje ya estaba cumplido";
   if (/app_full/.test(raw)) return "La app ya tiene sus 2 usuarios";
   if (/meal_not_found/.test(raw)) return "Esa foto ya no está";
+  if (/review_closed/.test(raw)) return "Ese día ya se cerró";
   if (/Invalid login credentials/i.test(raw)) return "Email o contraseña incorrectos";
   if (/rate limit|too many/i.test(raw)) return "Demasiados intentos, esperá un minuto";
   if (/row-level security/i.test(raw)) return "Ya no se puede cargar ese día";

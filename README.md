@@ -14,11 +14,11 @@ Si alguien pasa un día sin subir nada (o el otro le rechaza la foto), **el otro
 |---|---|
 | Todos los días 12:30 | Recordatorio a quien no subió nada |
 | Todos los días 21:30 | "Última llamada" |
-| Todos los días 10:00 | Se cierra **el día anterior** y se reparten los puntos (hasta esa hora se puede cargar lo de ayer) |
+| Todos los días 8:00 | Se cierra **el día anterior**: lo que nadie revisó se aprueba solo y quien no tiene comida aprobada le da 1 punto al otro |
 | Domingo 21:00 | Resumen semanal (puntos + comidas) |
 | Miércoles 04:00 | Se borran las fotos de las semanas ya resumidas. **La data queda**, solo se van las imágenes |
 
-Los horarios están en [supabase/cron.sql](supabase/cron.sql) y la hora de gracia en la migración (`private.grace_hour()`).
+Los horarios están en [supabase/cron.sql](supabase/cron.sql) y la hora del cierre en la migración (`private.grace_hour()`).
 Las notificaciones le llegan a cada uno en su idioma.
 
 ## Correrlo local

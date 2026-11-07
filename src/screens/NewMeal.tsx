@@ -1,9 +1,9 @@
 import { AnimatePresence, motion } from "motion/react";
 import { useEffect, useRef, useState, type FormEvent } from "react";
-import { PiArrowsClockwiseBold, PiCameraBold, PiImagesBold, PiPaperPlaneTiltBold } from "react-icons/pi";
+import { PiArrowsClockwiseBold, PiCameraBold, PiPaperPlaneTiltBold } from "react-icons/pi";
 import { api, type MealKind } from "../api";
 import { useI18n } from "../i18n";
-import { addDays, canLogYesterday, localToday } from "../lib/dates";
+import { localToday } from "../lib/dates";
 import { compressImage } from "../lib/image";
 import { KIND_META, Segmented, Sheet, ease, errMsg, press, useToast } from "../ui";
 
@@ -11,15 +11,12 @@ export function NewMealSheet({ open, onClose, onSaved }: { open: boolean; onClos
   const { t } = useI18n();
   const toast = useToast();
   const cameraRef = useRef<HTMLInputElement>(null);
-  const galleryRef = useRef<HTMLInputElement>(null);
   const [kind, setKind] = useState<MealKind>("fruta");
   const [desc, setDesc] = useState("");
   const [photo, setPhoto] = useState<Blob | null>(null);
   const [preview, setPreview] = useState<string | null>(null);
-  const [day, setDay] = useState<"hoy" | "ayer">("hoy");
   const [busy, setBusy] = useState(false);
   const [processing, setProcessing] = useState(false);
-  const yesterdayOk = canLogYesterday();
 
   useEffect(() => {
     if (!open) {
@@ -27,7 +24,6 @@ export function NewMealSheet({ open, onClose, onSaved }: { open: boolean; onClos
         setDesc("");
         setPhoto(null);
         setPreview(null);
-        setDay("hoy");
       }, 300);
       return () => clearTimeout(timer);
     }
@@ -52,8 +48,7 @@ export function NewMealSheet({ open, onClose, onSaved }: { open: boolean; onClos
     if (!photo) return toast(t("Falta la foto"), "error");
     setBusy(true);
     try {
-      const today = localToday();
-      await api.addMeal({ kind, description: desc.trim(), photo, localDate: day === "ayer" ? addDays(today, -1) : today });
+      await api.addMeal({ kind, description: desc.trim(), photo, localDate: localToday() });
       toast(t("Subida"));
       onSaved();
     } catch (err) {
@@ -66,8 +61,18 @@ export function NewMealSheet({ open, onClose, onSaved }: { open: boolean; onClos
   return (
     <Sheet open={open} onClose={onClose} title={t("¿Qué comiste?")}>
       <form className="stack" onSubmit={submit}>
-        <input ref={cameraRef} type="file" accept="image/*" capture="environment" hidden onChange={(e) => onFile(e.target.files?.[0])} />
-        <input ref={galleryRef} type="file" accept="image/*" hidden onChange={(e) => onFile(e.target.files?.[0])} />
+        {/* Solo cámara: capture abre la cámara directo en el celu, sin opción de galería. */}
+        <input
+          ref={cameraRef}
+          type="file"
+          accept="image/*"
+          capture="environment"
+          hidden
+          onChange={(e) => {
+            onFile(e.target.files?.[0]);
+            e.target.value = "";
+          }}
+        />
 
         <AnimatePresence mode="wait" initial={false}>
           {preview ? (
@@ -80,9 +85,9 @@ export function NewMealSheet({ open, onClose, onSaved }: { open: boolean; onClos
               transition={{ duration: 0.45, ease }}
             >
               <img src={preview} alt="" />
-              <motion.button type="button" className="btn btn-sm btn-soft" onClick={() => galleryRef.current?.click()} whileTap={press}>
+              <motion.button type="button" className="btn btn-sm btn-soft" onClick={() => cameraRef.current?.click()} whileTap={press}>
                 <PiArrowsClockwiseBold aria-hidden />
-                {t("Cambiar")}
+                {t("Sacar otra")}
               </motion.button>
             </motion.div>
           ) : (
@@ -90,10 +95,6 @@ export function NewMealSheet({ open, onClose, onSaved }: { open: boolean; onClos
               <motion.button type="button" className="photo-btn main" onClick={() => cameraRef.current?.click()} disabled={processing} whileTap={press}>
                 <PiCameraBold aria-hidden />
                 {processing ? t("Procesando…") : t("Sacar foto")}
-              </motion.button>
-              <motion.button type="button" className="photo-btn alt" onClick={() => galleryRef.current?.click()} disabled={processing} whileTap={press}>
-                <PiImagesBold aria-hidden />
-                {t("Galería")}
               </motion.button>
             </motion.div>
           )}
@@ -111,17 +112,6 @@ export function NewMealSheet({ open, onClose, onSaved }: { open: boolean; onClos
           <input className="input" value={desc} maxLength={140} onChange={(e) => setDesc(e.target.value)} placeholder={t("Ej: manzana verde, ensalada de tomate")} />
         </label>
 
-        {yesterdayOk && (
-          <Segmented
-            label={t("Día")}
-            value={day}
-            onChange={setDay}
-            options={[
-              { value: "hoy", label: t("Hoy") },
-              { value: "ayer", label: t("Ayer, hasta las 10") },
-            ]}
-          />
-        )}
 
         <motion.button className="btn btn-ink btn-block" disabled={busy || processing || !photo} whileTap={press}>
           <PiPaperPlaneTiltBold aria-hidden />

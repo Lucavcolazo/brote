@@ -5,6 +5,7 @@ import {
   PiCameraBold,
   PiCheckBold,
   PiCheckCircleFill,
+  PiClockBold,
   PiEyeBold,
   PiImageBrokenBold,
   PiHourglassMediumBold,
@@ -18,7 +19,7 @@ import { EmptyStall, Stall, type StallPlayer } from "../components/feira";
 import { QUICK_REACTION, ReactionBar, ReactionBurst, useReactions } from "../components/Reactions";
 import { avatarOf } from "../config";
 import { useI18n } from "../i18n";
-import { addDays, canLogYesterday, clock, dayLabel, localToday } from "../lib/dates";
+import { canReview, clock, dayLabel, localToday } from "../lib/dates";
 import { KindTag, ease, errMsg, press, spring, useToast } from "../ui";
 
 export function Home({ ctx }: { ctx: Ctx }) {
@@ -146,7 +147,9 @@ function MealPost({ meal, ctx }: { meal: Meal; ctx: Ctx }) {
   const author = mine ? me.profile : me.partner;
   const partnerName = me.partner?.name ?? "";
   const today = localToday();
-  const canDelete = mine && (meal.local_date === today || (meal.local_date === addDays(today, -1) && canLogYesterday()));
+  const canDelete = mine && meal.local_date === today;
+  const reviewOpen = canReview(meal.local_date);
+  const autoHint = meal.local_date === today ? t("Si no se revisa, mañana a las 8:00 se aprueba sola.") : t("Si no se revisa antes de las 8:00, se aprueba sola.");
   const { list: reactions, mine: myReaction, react } = useReactions(meal, me.userId);
   const [burst, setBurst] = useState(0);
   const [photoReady, setPhotoReady] = useState(false);
@@ -250,33 +253,48 @@ function MealPost({ meal, ctx }: { meal: Meal; ctx: Ctx }) {
 
         {me.partner && <ReactionBar list={reactions} mine={myReaction} react={react} people={{ me: me.profile, partner: me.partner }} />}
 
-        {!mine && meal.review === null ? (
-          <div className="post-actions">
-            <motion.button className="btn btn-sm btn-vale" disabled={busy} whileTap={press} onClick={() => act(() => api.reviewMeal(meal.id, "ok"), t("Aprobada"))}>
-              <PiCheckBold aria-hidden />
-              {t("Vale")}
-            </motion.button>
-            <motion.button className="btn btn-sm btn-no" disabled={busy} whileTap={press} onClick={() => act(() => api.reviewMeal(meal.id, "rejected"), t("Marcada: no cuenta"))}>
-              <PiXBold aria-hidden />
-              {t("No cuenta")}
-            </motion.button>
-          </div>
+        {!mine && meal.review === null && reviewOpen ? (
+          <>
+            <div className="post-actions">
+              <motion.button className="btn btn-sm btn-vale" disabled={busy} whileTap={press} onClick={() => act(() => api.reviewMeal(meal.id, "ok"), t("Aprobada"))}>
+                <PiCheckBold aria-hidden />
+                {t("Vale")}
+              </motion.button>
+              <motion.button className="btn btn-sm btn-no" disabled={busy} whileTap={press} onClick={() => act(() => api.reviewMeal(meal.id, "rejected"), t("Marcada: no cuenta"))}>
+                <PiXBold aria-hidden />
+                {t("No cuenta")}
+              </motion.button>
+            </div>
+            <p className="post-hint">
+              <PiClockBold aria-hidden />
+              {autoHint}
+            </p>
+          </>
         ) : (
           <div className="post-actions">
-            {mine && meal.review === null && (
+            {meal.review === null && mine && (
               <span className="post-status">
                 <PiEyeBold aria-hidden />
-                {t("Esperando a {name}", { name: partnerName })}
+                <span>
+                  {t("Esperando a {name}", { name: partnerName })}
+                  <small>{autoHint}</small>
+                </span>
               </span>
             )}
-            {mine && meal.review !== null && (
+            {meal.review === "ok" && meal.review_auto && (
+              <span className="post-status">
+                <PiClockBold aria-hidden style={{ color: "var(--vale)" }} />
+                {t("Se aprobó sola")}
+              </span>
+            )}
+            {mine && meal.review !== null && !meal.review_auto && (
               <span className="post-status">
                 {meal.review === "ok" ? <PiCheckBold aria-hidden style={{ color: "var(--vale)" }} /> : <PiXBold aria-hidden style={{ color: "var(--nocuenta)" }} />}
                 {meal.review === "ok" ? t("{name} la aprobó", { name: partnerName }) : t("{name} dice que no cuenta", { name: partnerName })}
               </span>
             )}
             <span className="post-tools">
-              {!mine && meal.review !== null && (
+              {!mine && meal.review !== null && reviewOpen && (
                 <button className="link" disabled={busy} onClick={() => act(() => api.reviewMeal(meal.id, meal.review === "ok" ? "rejected" : "ok"), t("Cambiado"))}>
                   {t("Cambiar")}
                 </button>

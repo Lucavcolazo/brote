@@ -17,8 +17,8 @@ A private two-player rivalry, not a health tracker: the only audience is the par
 
 ## Operating Context
 - Phone only, one hand, quick sessions; posting happens at meals (camera or gallery).
-- Push notifications drive visits: midday reminder, night "last call", day close at 10:00 with points, partner posts and redemptions, Sunday 21:00 weekly summary.
-- All dates are Argentina time. Yesterday can be logged until 10:00.
+- Push notifications drive visits: midday reminder, night "last call", day close at 08:00 with points (unreviewed posts auto-approve), partner posts and redemptions, Sunday 21:00 weekly summary.
+- All dates are Argentina time. A day runs 00:00 to 00:00; only today can be logged. Reviews stay open until the 08:00 close.
 - Photos are deleted the Wednesday after their week is summarized; meal data and points stay forever.
 
 ## Capabilities and Constraints

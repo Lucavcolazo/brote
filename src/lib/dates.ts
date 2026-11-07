@@ -2,7 +2,8 @@ import type { T } from "../i18n";
 
 // Todas las fechas "del día" se calculan en hora argentina, igual que en la base.
 export const TZ = "America/Argentina/Buenos_Aires";
-export const GRACE_HOUR = 10; // hasta las 10 se puede cargar lo de ayer
+/** A esta hora local se cierra el día anterior: lo no revisado se aprueba solo y se reparten los puntos. */
+export const CLOSE_HOUR = 8;
 
 export function localToday(now = new Date()): string {
   return new Intl.DateTimeFormat("en-CA", { timeZone: TZ }).format(now);
@@ -23,8 +24,10 @@ export function mondayOf(iso: string): string {
   return addDays(iso, -((dow + 6) % 7));
 }
 
-export function canLogYesterday(now = new Date()): boolean {
-  return localHour(now) < GRACE_HOUR;
+/** Se puede aprobar o rechazar una comida hasta las 8:00 del día siguiente. */
+export function canReview(localDate: string, now = new Date()): boolean {
+  const today = localToday(now);
+  return localDate === today || (localDate === addDays(today, -1) && localHour(now) < CLOSE_HOUR);
 }
 
 const noon = (iso: string) => new Date(iso + "T12:00:00Z");
