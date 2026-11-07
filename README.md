@@ -21,7 +21,7 @@ Si alguien pasa un día sin subir nada (o el otro le rechaza la foto), **el otro
 Los horarios están en [supabase/cron.sql](supabase/cron.sql) y la hora de gracia en la migración (`private.grace_hour()`).
 Las notificaciones le llegan a cada uno en su idioma.
 
-## Probar sin configurar nada (modo demo)
+## Correrlo local
 
 ```bash
 npm install
@@ -31,7 +31,7 @@ npm install
 npm run dev
 ```
 
-Sin `.env` arranca en modo demo, con datos inventados: poné cualquier email y contraseña (si el email empieza con "gio" entrás como Giovanna).
+Necesita el `.env` (ver [.env.example](.env.example)). Si faltan las variables de Supabase, la app muestra "Falta configurar Supabase" en vez de arrancar.
 
 ## Puesta en marcha real
 
@@ -77,7 +77,7 @@ Editá las dos primeras variables de [supabase/cron.sql](supabase/cron.sql) (URL
 ### 5. Frontend en Vercel
 
 Importá el repo en Vercel (detecta Vite solo) y cargá las variables de [.env.example](.env.example):
-`VITE_SUPABASE_URL`, `VITE_SUPABASE_ANON_KEY`, `VITE_VAPID_PUBLIC_KEY`.
+`VITE_SUPABASE_URL`, `VITE_SUPABASE_PUBLISHABLE_KEY` (o `VITE_SUPABASE_ANON_KEY`), `VITE_VAPID_PUBLIC_KEY`.
 
 ### 6. En los celulares
 

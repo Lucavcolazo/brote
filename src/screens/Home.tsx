@@ -14,7 +14,7 @@ import { api, type Meal, type Profile } from "../api";
 import type { Ctx } from "../App";
 import { Avatar } from "../avatar/Avatar";
 import { COLOR_HEX } from "../avatar/model";
-import { Stall, type StallPlayer } from "../components/feira";
+import { EmptyStall, Stall, type StallPlayer } from "../components/feira";
 import { avatarOf } from "../config";
 import { useI18n } from "../i18n";
 import { addDays, canLogYesterday, clock, dayLabel, localToday } from "../lib/dates";
@@ -54,13 +54,14 @@ export function Home({ ctx }: { ctx: Ctx }) {
         <div className="market-head">
           <span className="wordmark">Brote</span>
           <span className="market-note">
-            {!leader ? t("Empate") : leader.id === me.userId ? t("Vas ganando por {n}", { n: gap }) : t("{name} gana por {n}", { name: leader.name, n: gap })}
+            {!me.partner ? "" : !leader ? t("Empate") : leader.id === me.userId ? t("Vas ganando por {n}", { n: gap }) : t("{name} gana por {n}", { name: leader.name, n: gap })}
           </span>
         </div>
         <div className="stalls">
           {players.map((p, i) => (
             <Stall key={p.id} p={p} leader={leader?.id === p.id} isMe={p.id === me.userId} index={i} />
           ))}
+          {!me.partner && <EmptyStall index={1} />}
         </div>
       </section>
 

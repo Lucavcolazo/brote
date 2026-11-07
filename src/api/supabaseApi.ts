@@ -29,7 +29,6 @@ export function createSupabaseApi(url: string, key: string): Api {
   }
 
   const api: Api = {
-    demo: false,
 
     getUserId: uid,
 

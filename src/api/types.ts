@@ -94,7 +94,6 @@ export interface Me {
 }
 
 export interface Api {
-  demo: boolean;
   getUserId(): Promise<string | null>;
   onAuthChange(cb: () => void): () => void;
   /** Entra con email y contraseña. Las 2 cuentas se crean a mano en Supabase; la sesión queda abierta. */

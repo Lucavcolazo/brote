@@ -8,8 +8,8 @@
 -- URL del proyecto (Project Settings > API) y el mismo CRON_SECRET que cargaste en la edge function.
 do $$
 declare
-  v_url    text := 'https://TU-PROYECTO.supabase.co';
-  v_secret text := 'PEGÁ-ACÁ-TU-CRON_SECRET';
+  v_url    text := 'https://mfwwcfqdjvhljtzdgfln.supabase.co';
+  v_secret text := 'ebdd34c2df29dddd2ceab5f7b10b891fcf29ade4271f786ad3569845b895f0c3';
   v_id     uuid;
 begin
   select id into v_id from vault.secrets where name = 'brote_project_url';

@@ -10,13 +10,14 @@ export const LANGS: { id: Lang; label: string; flag: string }[] = [
 
 const PT: Record<string, string> = {
   // ---- Feira ----
+  "Esperando a tu pareja": "Esperando seu par",
+  "Todavía no entró": "Ainda não entrou",
   "Entrá a tu puesto": "Entre na sua barraca",
   "Email o contraseña incorrectos": "E-mail ou senha incorretos",
   "Demasiados intentos, esperá un minuto": "Muitas tentativas, espere um minuto",
   "No subiste fruta ni verdura el {date}": "Você não postou fruta nem verdura em {date}",
   "{name} no subió fruta ni verdura el {date}": "{name} não postou fruta nem verdura em {date}",
   "Vas ganando por {n}": "Você está ganhando por {n}",
-  "Modo demo · datos inventados": "Modo demo · dados inventados",
   "Secciones": "Seções",
   "Marcador": "Placar",
   "Config": "Config",
@@ -120,7 +121,6 @@ const PT: Record<string, string> = {
   "Semana": "Semana",
   "Yo": "Eu",
   "Subir comida": "Postar comida",
-  "Modo demo · los datos son de mentira": "Modo demo · os dados são de mentira",
   // feed
   "Hoy": "Hoje",
   "Ayer": "Ontem",

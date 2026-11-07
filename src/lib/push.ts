@@ -16,7 +16,7 @@ export async function pushState(): Promise<PushState> {
   if (!("serviceWorker" in navigator) || !("PushManager" in window) || !("Notification" in window)) {
     return isIos() && !isStandalone() ? "ios-install" : "unsupported";
   }
-  if (!VAPID && !api.demo) return "not-configured";
+  if (!VAPID) return "not-configured";
   if (Notification.permission === "denied") return "denied";
   if (Notification.permission === "granted") {
     const reg = await navigator.serviceWorker.getRegistration();
@@ -37,10 +37,6 @@ export async function registerServiceWorker() {
 
 /** Tiene que llamarse desde un toque del usuario (iOS lo exige). */
 export async function enablePush(): Promise<PushState> {
-  if (api.demo) {
-    const p = await Notification.requestPermission();
-    return p === "granted" ? "enabled" : "denied";
-  }
   const permission = await Notification.requestPermission();
   if (permission !== "granted") return "denied";
   const reg = await navigator.serviceWorker.ready;
@@ -53,7 +49,7 @@ export async function enablePush(): Promise<PushState> {
 
 /** Si ya había permiso, re-asocia la suscripción al usuario actual (por si cambió de cuenta o se renovó). */
 export async function refreshPushSubscription() {
-  if (api.demo || !VAPID || !("serviceWorker" in navigator) || !("Notification" in window)) return;
+  if (!VAPID || !("serviceWorker" in navigator) || !("Notification" in window)) return;
   if (Notification.permission !== "granted") return;
   const reg = await navigator.serviceWorker.ready;
   const sub = await reg.pushManager.getSubscription();

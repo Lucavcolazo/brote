@@ -1,7 +1,7 @@
 // Las piezas del mundo Feira: el toldo a rayas, el cartel de precio que cuelga y los números que ruedan.
 import { AnimatePresence, motion, useAnimationControls, useReducedMotion } from "motion/react";
 import { useEffect, useId, useRef } from "react";
-import { PiCrownSimpleFill, PiFireFill } from "react-icons/pi";
+import { PiCrownSimpleFill, PiFireFill, PiHourglassMediumBold } from "react-icons/pi";
 import { Avatar } from "../avatar/Avatar";
 import type { AvatarConfig } from "../avatar/model";
 import { COLOR_HEX } from "../avatar/model";
@@ -146,6 +146,28 @@ export function Stall({ p, leader, isMe, index }: { p: StallPlayer; leader: bool
             </motion.span>
           )}
         </AnimatePresence>
+      </div>
+    </div>
+  );
+}
+
+/** Puesto vacío: la pareja todavía no entró a la app. */
+export function EmptyStall({ index }: { index: number }) {
+  const { t } = useI18n();
+  return (
+    <div className="stall stall-empty">
+      <Awning color="#C9C4BA" delay={index * 0.08} />
+      <motion.div
+        className="stall-face"
+        initial={{ opacity: 0, y: -10 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ duration: 0.5, ease, delay: 0.15 + index * 0.08 }}
+      >
+        <span className="stall-name">{t("Esperando a tu pareja")}</span>
+      </motion.div>
+      <div className="stall-wait">
+        <PiHourglassMediumBold aria-hidden />
+        {t("Todavía no entró")}
       </div>
     </div>
   );

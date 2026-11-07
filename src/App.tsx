@@ -187,7 +187,6 @@ function Main({ me, reloadMe }: { me: Ctx["me"]; reloadMe: () => Promise<void> }
 
   return (
     <div className="app">
-      {api.demo && <div className="demo-banner">{t("Modo demo · datos inventados")}</div>}
 
       <AnimatePresence mode="popLayout" initial={false} custom={dir}>
         <motion.main
