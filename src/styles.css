@@ -145,6 +145,8 @@ h1, h2, h3, h4, p { margin: 0; }
 /* ---------- marcador: los dos puestos ---------- */
 .market {
   position: relative; overflow: hidden;
+  /* el tono se recalcula acá: si queda en :root, ignora el color que pone la app */
+  --leader-tint: color-mix(in srgb, var(--leader) 20%, white);
   background: var(--leader-tint);
   padding: calc(env(safe-area-inset-top) + 18px) 14px 26px;
   transition: background-color 0.6s var(--ease-out);
@@ -208,7 +210,7 @@ h1, h2, h3, h4, p { margin: 0; }
 /* ---------- feed ---------- */
 .day-title { margin: 6px 16px 12px; font-size: 13px; font-weight: 850; font-stretch: 75%; letter-spacing: 0.08em; text-transform: uppercase; color: var(--ink-2); }
 .post { margin: 0 16px 18px; border-radius: var(--r-lg); background: var(--ground); box-shadow: var(--shadow-1); overflow: hidden; }
-.post.rejected .post-photo img { filter: grayscale(0.85); opacity: 0.6; }
+.post.rejected .post-photo img { filter: grayscale(0.85); }
 .post-head { display: flex; align-items: center; gap: 10px; padding: 12px 14px; }
 .post-who { flex: 1; min-width: 0; display: grid; line-height: 1.15; }
 .post-who b { font-size: 15px; }
@@ -232,6 +234,24 @@ h1, h2, h3, h4, p { margin: 0; }
 .post-status { display: inline-flex; align-items: center; gap: 6px; font-size: 14px; font-weight: 650; color: var(--ink-2); }
 .post-status svg { width: 17px; height: 17px; }
 .post-tools { display: flex; gap: 16px; margin-left: auto; }
+
+/* reacciones: chapitas pegadas debajo de la foto */
+.rx { position: relative; display: flex; align-items: center; gap: 8px; min-height: 40px; }
+.rx-list { display: flex; flex-wrap: wrap; gap: 6px; list-style: none; padding: 0; margin: 0; flex: 1; min-width: 0; }
+.rx-chip { display: inline-flex; align-items: center; gap: 5px; height: 36px; padding: 0 10px 0 5px; border-radius: 999px; background: var(--canvas); }
+.rx-chip.mine { box-shadow: inset 0 0 0 2px var(--ink); background: var(--ground); }
+.rx-emoji, .rx-option, .rx-burst { font-family: "Apple Color Emoji", "Segoe UI Emoji", "Noto Color Emoji", sans-serif; line-height: 1; }
+.rx-emoji { display: inline-block; font-size: 18px; }
+.rx-add { display: inline-flex; align-items: center; gap: 6px; height: 36px; padding: 0 12px; margin-left: auto; border-radius: 999px; color: var(--ink-2); background: var(--canvas); font-size: 14px; font-weight: 700; transition: background 0.2s, color 0.2s; flex: none; }
+.rx-add svg { width: 20px; height: 20px; }
+.rx-add.on { background: var(--ink); color: #fff; }
+.rx-palette {
+  position: absolute; right: 0; bottom: calc(100% + 8px); z-index: 5; transform-origin: 90% 100%;
+  display: flex; gap: 2px; padding: 6px; border-radius: 999px; background: var(--ground); box-shadow: var(--shadow-2), 0 0 0 1px var(--line);
+}
+.rx-option { width: 44px; height: 44px; display: grid; place-items: center; border-radius: 999px; font-size: 26px; }
+.rx-option.on { background: var(--fluo); }
+.rx-burst { position: absolute; left: 50%; top: 50%; margin: -48px 0 0 -48px; width: 96px; height: 96px; display: grid; place-items: center; font-size: 72px; pointer-events: none; filter: drop-shadow(0 6px 16px rgba(30, 27, 22, 0.35)); }
 
 .empty { margin: 8px 16px 0; padding: 28px 20px; border-radius: var(--r-lg); background: var(--canvas); text-align: center; display: grid; justify-items: center; gap: 10px; }
 .empty svg.empty-art { width: 120px; height: auto; }
@@ -408,13 +428,57 @@ h1, h2, h3, h4, p { margin: 0; }
 
 /* ---------- entrada ---------- */
 .login { min-height: 100dvh; display: flex; flex-direction: column; }
-.login-market { background: var(--leader-tint); padding: calc(env(safe-area-inset-top) + 36px) 18px 36px; display: grid; justify-items: center; gap: 22px; }
+.login-market { --leader-tint: color-mix(in srgb, var(--leader) 20%, white); background: var(--leader-tint); padding: calc(env(safe-area-inset-top) + 36px) 18px 36px; display: grid; justify-items: center; gap: 22px; }
 .login-market .wordmark { font-size: 56px; }
 .login-duo { display: flex; gap: 6px; align-items: flex-end; }
 .login-body { flex: 1; padding: 26px 18px calc(env(safe-area-inset-bottom) + 26px); display: grid; align-content: start; gap: 16px; max-width: 460px; width: 100%; margin: 0 auto; }
 .login-body h1 { font-size: 26px; font-weight: 850; font-stretch: 78%; text-transform: uppercase; line-height: 1.05; }
 .login-body p { color: var(--ink-2); }
 .boot { min-height: 100dvh; display: grid; place-items: center; }
+
+/* ---------- esqueletos de carga ----------
+   Tinta translúcida: sirve igual sobre blanco, lona o la franja del marcador.
+   El brillo usa fondo fijo, así todos los huesos barren a la vez como una sola luz. */
+.bone {
+  display: inline-block; flex: none;
+  background-color: rgba(30, 27, 22, 0.07);
+  background-image: linear-gradient(100deg, transparent 20%, rgba(255, 255, 255, 0.75) 50%, transparent 80%);
+  background-size: 60vw 100%; background-repeat: no-repeat; background-attachment: fixed;
+  animation: bone-sweep 1.5s cubic-bezier(0.4, 0, 0.2, 1) infinite;
+}
+@keyframes bone-sweep {
+  from { background-position: -60vw 0; }
+  to { background-position: 160vw 0; }
+}
+.skeleton { pointer-events: none; }
+.sk-market { --leader: #c9c4ba; }
+.sk-stall { display: grid; justify-items: center; }
+.sk-pill { width: 100%; }
+.sk-post { box-shadow: var(--shadow-1); }
+.sk-photo { aspect-ratio: 4 / 3.3; display: flex; }
+.sk-photo .bone { border-radius: 0; }
+.sk-cell { aspect-ratio: 1; width: 100%; }
+.sk-option { aspect-ratio: 1; width: 100%; }
+.sk-stage { --stage: #c9c4ba; height: 230px; }
+.sk-tabbar .tab { padding-top: 16px; gap: 6px; }
+.sk-fab { background: rgba(30, 27, 22, 0.08); box-shadow: none; }
+.tilt-l { rotate: -1.5deg; }
+.tilt-r { rotate: 1.5deg; }
+.day-title .bone { vertical-align: middle; }
+.section-title .bone { display: block; }
+
+/* La foto del feed muestra el brillo hasta que termina de bajar, y entra con un fundido. */
+.post-photo.loading::before {
+  content: ""; position: absolute; inset: 0;
+  background-color: rgba(30, 27, 22, 0.05);
+  background-image: linear-gradient(100deg, transparent 20%, rgba(255, 255, 255, 0.75) 50%, transparent 80%);
+  background-size: 60vw 100%; background-repeat: no-repeat; background-attachment: fixed;
+  animation: bone-sweep 1.5s cubic-bezier(0.4, 0, 0.2, 1) infinite;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .bone, .post-photo.loading::before { animation: none; background-image: none; }
+}
 
 @media (prefers-reduced-motion: reduce) {
   *, *::before, *::after { transition-duration: 0.01ms !important; }

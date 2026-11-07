@@ -22,6 +22,11 @@ export interface Couple {
   invite_code: string;
 }
 
+export interface MealReaction {
+  user_id: string;
+  emoji: string;
+}
+
 export interface Meal {
   id: string;
   user_id: string;
@@ -33,6 +38,7 @@ export interface Meal {
   local_date: string;
   review: Verdict | null;
   created_at: string;
+  reactions: MealReaction[];
 }
 
 export interface PointEvent {
@@ -110,6 +116,8 @@ export interface Api {
   addMeal(input: { kind: MealKind; description: string; photo: Blob; localDate: string }): Promise<void>;
   deleteMeal(meal: Meal): Promise<void>;
   reviewMeal(id: string, verdict: Verdict): Promise<void>;
+  /** Una reacción por persona y foto: otra la cambia, la misma (o null) la saca. Devuelve la que quedó. */
+  reactMeal(id: string, emoji: string | null): Promise<string | null>;
 
   listPointEvents(): Promise<PointEvent[]>;
   listStoreItems(): Promise<StoreItem[]>;

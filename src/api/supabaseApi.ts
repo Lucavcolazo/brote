@@ -1,5 +1,5 @@
 import { createClient } from "@supabase/supabase-js";
-import type { Api, Meal, Me, Profile } from "./types";
+import type { Api, Meal, MealReaction, Me, Profile } from "./types";
 
 const BUCKET = "meal-photos";
 
@@ -15,6 +15,9 @@ const cleanError = (msg: string) => msg;
 export function createSupabaseApi(url: string, key: string): Api {
   const sb = createClient(url, key, { auth: { persistSession: true, autoRefreshToken: true } });
   let cachedMe: Me | null = null;
+  // Reusamos las URLs firmadas mientras sigan vigentes: si cambian en cada recarga, las fotos se vuelven a bajar y parpadean.
+  const signed = new Map<string, { url: string; until: number }>();
+  const SIGNED_TTL = 60 * 60 * 6;
 
   async function uid(): Promise<string | null> {
     const { data } = await sb.auth.getSession();
@@ -85,14 +88,32 @@ export function createSupabaseApi(url: string, key: string): Api {
           .gte("local_date", sinceDate)
           .order("created_at", { ascending: false })
           .limit(200),
-      ) as Omit<Meal, "photo_url">[];
+      ) as Omit<Meal, "photo_url" | "reactions">[];
+      const now = Date.now();
       const paths = rows.map((r) => r.photo_path).filter((p): p is string => !!p);
-      const urls = new Map<string, string>();
-      if (paths.length) {
-        const { data } = await sb.storage.from(BUCKET).createSignedUrls(paths, 60 * 60 * 6);
-        for (const d of data ?? []) if (d.path && d.signedUrl) urls.set(d.path, d.signedUrl);
+      const missing = paths.filter((p) => (signed.get(p)?.until ?? 0) < now + 10 * 60 * 1000);
+      const ids = rows.map((r) => r.id);
+      const [signedRes, reactionRes] = await Promise.all([
+        missing.length ? sb.storage.from(BUCKET).createSignedUrls(missing, SIGNED_TTL) : Promise.resolve({ data: [] }),
+        ids.length
+          ? sb.from("meal_reactions").select("meal_id, user_id, emoji, created_at").in("meal_id", ids).order("created_at")
+          : Promise.resolve({ data: [], error: null }),
+      ]);
+      for (const d of signedRes.data ?? []) {
+        if (d.path && d.signedUrl) signed.set(d.path, { url: d.signedUrl, until: now + SIGNED_TTL * 1000 });
       }
-      return rows.map((r) => ({ ...r, photo_url: r.photo_path ? urls.get(r.photo_path) ?? null : null }));
+      // Si todavía no corriste la migración de reacciones, el feed anda igual, sin reacciones.
+      const byMeal = new Map<string, MealReaction[]>();
+      for (const r of (reactionRes.error ? [] : reactionRes.data ?? []) as (MealReaction & { meal_id: string })[]) {
+        const list = byMeal.get(r.meal_id) ?? [];
+        list.push({ user_id: r.user_id, emoji: r.emoji });
+        byMeal.set(r.meal_id, list);
+      }
+      return rows.map((r) => ({
+        ...r,
+        photo_url: r.photo_path ? signed.get(r.photo_path)?.url ?? null : null,
+        reactions: byMeal.get(r.id) ?? [],
+      }));
     },
 
     async addMeal({ kind, description, photo, localDate }) {
@@ -113,6 +134,10 @@ export function createSupabaseApi(url: string, key: string): Api {
 
     async reviewMeal(id, verdict) {
       check(await sb.rpc("review_meal", { p_meal: id, p_verdict: verdict }));
+    },
+
+    async reactMeal(id, emoji) {
+      return check(await sb.rpc("react_meal", { p_meal: id, p_emoji: emoji }));
     },
 
     async listPointEvents() {
@@ -189,8 +214,11 @@ export function createSupabaseApi(url: string, key: string): Api {
         .on("postgres_changes", { event: "*", schema: "public", table: "redemptions" }, cb)
         .on("postgres_changes", { event: "*", schema: "public", table: "point_events" }, cb)
         .subscribe();
+      // Canal aparte: si la tabla de reacciones todavía no existe, no se cae el realtime del resto.
+      const rx = sb.channel("brote-reactions").on("postgres_changes", { event: "*", schema: "public", table: "meal_reactions" }, cb).subscribe();
       return () => {
         sb.removeChannel(ch);
+        sb.removeChannel(rx);
       };
     },
   };

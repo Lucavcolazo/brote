@@ -1,0 +1,14 @@
+{
+  "detector": {
+    "ignoreRules": [],
+    "ignoreFiles": [],
+    "ignoreValues": [
+      {
+        "rule": "design-system-font",
+        "value": "apple color emoji",
+        "createdAt": "2026-11-07T15:01:33.020Z",
+        "reason": "System color-emoji stack for feed reactions; user asked for emoji reactions in chat"
+      }
+    ]
+  }
+}

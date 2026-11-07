@@ -1,5 +1,5 @@
 import { AnimatePresence, motion } from "motion/react";
-import { useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import {
   PiArrowRightBold,
   PiCameraBold,
@@ -15,6 +15,7 @@ import type { Ctx } from "../App";
 import { Avatar } from "../avatar/Avatar";
 import { COLOR_HEX } from "../avatar/model";
 import { EmptyStall, Stall, type StallPlayer } from "../components/feira";
+import { QUICK_REACTION, ReactionBar, ReactionBurst, useReactions } from "../components/Reactions";
 import { avatarOf } from "../config";
 import { useI18n } from "../i18n";
 import { addDays, canLogYesterday, clock, dayLabel, localToday } from "../lib/dates";
@@ -146,6 +147,37 @@ function MealPost({ meal, ctx }: { meal: Meal; ctx: Ctx }) {
   const partnerName = me.partner?.name ?? "";
   const today = localToday();
   const canDelete = mine && (meal.local_date === today || (meal.local_date === addDays(today, -1) && canLogYesterday()));
+  const { list: reactions, mine: myReaction, react } = useReactions(meal, me.userId);
+  const [burst, setBurst] = useState(0);
+  const [photoReady, setPhotoReady] = useState(false);
+  const imgRef = useRef<HTMLImageElement>(null);
+  // Si la foto ya estaba en caché puede terminar de cargar antes de que React escuche el evento.
+  useEffect(() => {
+    if (imgRef.current?.complete) setPhotoReady(true);
+  }, [meal.photo_url]);
+  const tapTimer = useRef<ReturnType<typeof setTimeout>>();
+
+  useEffect(() => {
+    if (!burst) return;
+    const id = setTimeout(() => setBurst(0), 650);
+    return () => clearTimeout(id);
+  }, [burst]);
+  useEffect(() => () => clearTimeout(tapTimer.current), []);
+
+  // Un toque abre la foto; doble toque deja la reacción rápida (no la saca si ya estaba).
+  function onPhotoTap() {
+    if (tapTimer.current) {
+      clearTimeout(tapTimer.current);
+      tapTimer.current = undefined;
+      setBurst(Date.now());
+      if (myReaction !== QUICK_REACTION) react(QUICK_REACTION);
+      return;
+    }
+    tapTimer.current = setTimeout(() => {
+      tapTimer.current = undefined;
+      setZoom(true);
+    }, 260);
+  }
 
   async function act(fn: () => Promise<void>, ok: string) {
     setBusy(true);
@@ -179,8 +211,16 @@ function MealPost({ meal, ctx }: { meal: Meal; ctx: Ctx }) {
       </div>
 
       {meal.photo_url ? (
-        <button className="post-photo" onClick={() => setZoom(true)} aria-label={t("Ver foto grande")}>
-          <motion.img src={meal.photo_url} alt={meal.description || t(meal.kind === "fruta" ? "Fruta" : meal.kind === "verdura" ? "Verdura" : "Las dos")} loading="lazy" layoutId={`photo-${meal.id}`} />
+        <button className={`post-photo ${photoReady ? "" : "loading"}`} onClick={onPhotoTap} aria-label={t("Ver foto grande")}>
+          <motion.img
+            ref={imgRef}
+            // Motion maneja la opacidad de esta imagen (por el layoutId), así que el fundido va acá y no en CSS.
+            initial={false}
+            animate={{ opacity: !photoReady ? 0 : meal.review === "rejected" ? 0.6 : 1 }}
+            transition={{ duration: 0.45, ease }}
+            onLoad={() => setPhotoReady(true)}
+            onError={() => setPhotoReady(true)}
+            src={meal.photo_url} alt={meal.description || t(meal.kind === "fruta" ? "Fruta" : meal.kind === "verdura" ? "Verdura" : "Las dos")} loading="lazy" layoutId={`photo-${meal.id}`} />
           <AnimatePresence>
             {meal.review && (
               <motion.span
@@ -196,6 +236,7 @@ function MealPost({ meal, ctx }: { meal: Meal; ctx: Ctx }) {
               </motion.span>
             )}
           </AnimatePresence>
+          <ReactionBurst emoji={QUICK_REACTION} burstKey={burst} />
         </button>
       ) : (
         <div className="post-photo gone">
@@ -206,6 +247,8 @@ function MealPost({ meal, ctx }: { meal: Meal; ctx: Ctx }) {
 
       <div className="post-body">
         {meal.description && <p className="post-desc">{meal.description}</p>}
+
+        {me.partner && <ReactionBar list={reactions} mine={myReaction} react={react} people={{ me: me.profile, partner: me.partner }} />}
 
         {!mine && meal.review === null ? (
           <div className="post-actions">

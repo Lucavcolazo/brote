@@ -3,8 +3,10 @@
 import { PGlite } from "@electric-sql/pglite";
 import { readFileSync } from "node:fs";
 
-const migration = readFileSync(new URL("../supabase/migrations/20261106000000_brote.sql", import.meta.url), "utf8")
-  .replace(/^create extension.*$/gim, "");
+const readMigration = (f) =>
+  readFileSync(new URL(`../supabase/migrations/${f}`, import.meta.url), "utf8").replace(/^create extension.*$/gim, "");
+const migration = readMigration("20261106000000_brote.sql");
+const reactions = readMigration("20261107000000_reactions.sql");
 
 const stubs = `
 create role anon nologin; create role authenticated nologin; create role service_role nologin bypassrls;
@@ -55,7 +57,8 @@ const all = async (sql, params) => (await db.query(sql, params)).rows;
 
 await db.exec(stubs);
 await db.exec(migration);
-ok(true, "migración aplicada");
+await db.exec(reactions);
+ok(true, "migraciones aplicadas");
 
 const A = "00000000-0000-0000-0000-00000000000a";
 const B = "00000000-0000-0000-0000-00000000000b";
@@ -107,6 +110,22 @@ const mealA = await one(`select id from public.meals limit 1`);
 await as(A, () => expectError(db.query(`select public.review_meal($1, 'ok')`, [mealA.id]), /cannot_review/, "A no puede revisar su propia comida"));
 await as(B, () => db.query(`select public.review_meal($1, 'ok')`, [mealA.id]));
 ok((await one(`select review from public.meals where id = $1`, [mealA.id])).review === "ok", "B aprueba la comida de A");
+
+// --- reacciones ---
+await as(B, () => db.query(`select public.react_meal($1, '❤️')`, [mealA.id]));
+ok((await as(A, () => all(`select * from public.meal_reactions`))).length === 1, "B reacciona a la foto de A y A la ve");
+ok((await all(`select * from net.calls`)).length === 0, "reaccionar no rompe aunque falten los secretos");
+await as(B, () => db.query(`select public.react_meal($1, '😂')`, [mealA.id]));
+const rx = await all(`select * from public.meal_reactions where meal_id = $1`, [mealA.id]);
+ok(rx.length === 1 && rx[0].emoji === "😂", "cambiar de reacción la reemplaza");
+await as(A, () => db.query(`select public.react_meal($1, '💪')`, [mealA.id]));
+ok((await all(`select * from public.meal_reactions where meal_id = $1`, [mealA.id])).length === 2, "A también puede reaccionar a su foto");
+await as(B, () => db.query(`select public.react_meal($1, '😂')`, [mealA.id]));
+ok((await all(`select * from public.meal_reactions where user_id = $1`, [B])).length === 0, "tocar la misma reacción la saca");
+await as(C, () => expectError(db.query(`select public.react_meal($1, '❤️')`, [mealA.id]), /not_in_couple|meal_not_found/, "un tercero no puede reaccionar"));
+ok((await as(C, () => all(`select * from public.meal_reactions`))).length === 0, "un tercero no ve reacciones");
+await as(A, () => expectError(db.query(`insert into public.meal_reactions (meal_id, user_id, couple_id, emoji) values ($1, $2, $3, 'x')`, [mealA.id, B, couple.id]), /permission denied/, "no se puede reaccionar en nombre del otro"));
+await as(B, () => db.query(`select public.react_meal($1, '❤️')`, [mealA.id]));
 
 // --- cierre del día ---
 // Ayer: A comió verdura, B nada. Anteayer: ninguno. Hoy-3: B comió algo que A rechazó.

@@ -13,6 +13,7 @@ import {
   PiTicketFill,
 } from "react-icons/pi";
 import { api, type Me, type Meal, type PointEvent, type Redemption, type StoreItem, type Streak, type WeeklySummary } from "./api";
+import { BootSkeleton, ScreenSkeleton } from "./components/Skeleton";
 import { avatarOf } from "./config";
 import { I18nProvider, useI18n } from "./i18n";
 import { addDays, localToday } from "./lib/dates";
@@ -90,17 +91,20 @@ function Root() {
   }, [loadMe]);
 
   const stage = me === undefined ? "boot" : me === null ? "login" : !me.profile?.couple_id ? "setup" : "main";
+  // El arranque comparte la llave con "main": si la sesión ya estaba abierta, el esqueleto pasa
+  // a la app sin un fundido de por medio.
+  const key = stage === "boot" ? "main" : stage;
 
   return (
     <AnimatePresence mode="wait" initial={false}>
       <motion.div
-        key={stage}
+        key={key}
         initial={{ opacity: 0 }}
         animate={{ opacity: 1 }}
         exit={{ opacity: 0, transition: { duration: 0.15 } }}
         transition={{ duration: 0.35, ease }}
       >
-        {stage === "boot" && <div className="boot" aria-busy="true" />}
+        {stage === "boot" && <BootSkeleton tab={readTab()} />}
         {stage === "login" && <LoginScreen />}
         {stage === "setup" && <SetupScreen onDone={loadMe} />}
         {stage === "main" && <Main me={me as Ctx["me"]} reloadMe={loadMe} />}
@@ -203,14 +207,20 @@ function Main({ me, reloadMe }: { me: Ctx["me"]; reloadMe: () => Promise<void> }
           exit="exit"
           transition={{ duration: 0.32, ease }}
         >
-          {!loaded ? null : tab === "marcador" ? (
-            <Home ctx={ctx} />
-          ) : tab === "tienda" ? (
-            <Store ctx={ctx} />
-          ) : tab === "semana" ? (
-            <Week ctx={ctx} />
-          ) : (
+          {tab === "config" ? (
             <ConfigScreen ctx={ctx} />
+          ) : (
+            <AnimatePresence mode="wait" initial={false}>
+              <motion.div
+                key={loaded ? "ready" : "loading"}
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                exit={{ opacity: 0, transition: { duration: 0.16 } }}
+                transition={{ duration: 0.3, ease }}
+              >
+                {!loaded ? <ScreenSkeleton tab={tab} /> : tab === "marcador" ? <Home ctx={ctx} /> : tab === "tienda" ? <Store ctx={ctx} /> : <Week ctx={ctx} />}
+              </motion.div>
+            </AnimatePresence>
           )}
         </motion.main>
       </AnimatePresence>

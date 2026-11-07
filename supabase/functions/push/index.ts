@@ -65,6 +65,10 @@ const MSG = {
     l === "pt"
       ? { title: ok ? `${by.name} aprovou sua ${KIND.pt[kind]}` : `${by.name} disse que sua ${KIND.pt[kind]} não vale`, body: ok ? "Boa!" : "Se não postar outra, esse dia não conta." }
       : { title: ok ? `${by.name} aprobó tu ${KIND.es[kind]}` : `${by.name} dice que tu ${KIND.es[kind]} no cuenta`, body: ok ? "¡Bien ahí!" : "Si no subís otra, ese día no cuenta." },
+  reacted: (l: Lang, by: Person, emoji: string, kind: string): Push =>
+    l === "pt"
+      ? { title: `${by.name} reagiu ${emoji} à sua ${KIND.pt[kind]}`, body: "Entra pra ver." }
+      : { title: `${by.name} reaccionó ${emoji} a tu ${KIND.es[kind]}`, body: "Entrá a verla." },
   redeemed: (l: Lang, who: Person, r: { emoji: string; title: string; cost: number }): Push =>
     l === "pt"
       ? { title: `${who.name} trocou: ${r.title}`, body: `Gastou ${r.cost} ponto${r.cost === 1 ? "" : "s"}. Agora você tem que cumprir.` }
@@ -168,6 +172,16 @@ const actions: Record<string, (body: Record<string, unknown>) => Promise<unknown
     const partner = await partnerOf(meal.user_id, meal.couple_id);
     if (!owner || !partner) return { skipped: "no partner" };
     return sendTo([owner.id], { ...MSG.reviewed(owner.lang, partner, meal.kind, meal.review === "ok"), url: "/?tab=feed" });
+  },
+
+  async meal_reacted({ meal_id, user_id }) {
+    const { data: meal } = await db.from("meals").select("id, user_id, kind").eq("id", meal_id).single();
+    if (!meal || meal.user_id === user_id) return { skipped: true };
+    const { data: rx } = await db.from("meal_reactions").select("emoji").eq("meal_id", meal_id).eq("user_id", user_id).maybeSingle();
+    const owner = await profile(meal.user_id);
+    const by = await profile(String(user_id));
+    if (!rx || !owner || !by) return { skipped: true };
+    return sendTo([owner.id], { ...MSG.reacted(owner.lang, by, rx.emoji, meal.kind), url: "/?tab=feed", tag: `reaction-${meal.id}` });
   },
 
   async redemption_created({ redemption_id }) {

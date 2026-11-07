@@ -145,6 +145,12 @@ const PT: Record<string, string> = {
   "Galería": "Galeria",
   "Procesando…": "Processando…",
   "Cambiar": "Trocar",
+  "Reaccionar": "Reagir",
+  "Cargando": "Carregando",
+  "Reacciones": "Reações",
+  "Sacar tu reacción": "Tirar sua reação",
+  "Elegí una reacción": "Escolha uma reação",
+  "Esa foto ya no está": "Essa foto não existe mais",
   "Fruta": "Fruta",
   "Verdura": "Verdura",
   "Las dos": "As duas",
@@ -249,6 +255,7 @@ export function errorKey(raw: string): string {
   if (/cannot_review/.test(raw)) return "No podés revisar tu propia comida";
   if (/not_pending/.test(raw)) return "Ese canje ya estaba cumplido";
   if (/app_full/.test(raw)) return "La app ya tiene sus 2 usuarios";
+  if (/meal_not_found/.test(raw)) return "Esa foto ya no está";
   if (/Invalid login credentials/i.test(raw)) return "Email o contraseña incorrectos";
   if (/rate limit|too many/i.test(raw)) return "Demasiados intentos, esperá un minuto";
   if (/row-level security/i.test(raw)) return "Ya no se puede cargar ese día";
