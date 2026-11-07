@@ -1,5 +1,5 @@
-import { AnimatePresence, MotionConfig, motion } from "motion/react";
-import { useCallback, useEffect, useMemo, useState } from "react";
+import { AnimatePresence, MotionConfig, motion, type Variants } from "motion/react";
+import { useCallback, useEffect, useLayoutEffect, useMemo, useRef, useState } from "react";
 import type { IconType } from "react-icons";
 import {
   PiCalendarDotsBold,
@@ -48,6 +48,28 @@ export interface Ctx {
   go: (tab: Tab) => void;
   openComposer: () => void;
 }
+
+// Cambio de pestaña: la nueva entra deslizando con resorte desde el lado hacia el que vas,
+// la vieja se corre al lado contrario y se apaga un poco antes, así nunca se pisan.
+type Shift = { dir: number; dy: number };
+const TAB_SPRING = { type: "spring", stiffness: 300, damping: 34, mass: 0.9 } as const;
+const TAB_MOTION: Variants = {
+  enter: ({ dir }: Shift) => ({ opacity: 0, x: dir * 44, scale: 0.985 }),
+  center: {
+    opacity: 1,
+    x: 0,
+    y: 0,
+    scale: 1,
+    transition: { x: TAB_SPRING, scale: TAB_SPRING, opacity: { duration: 0.28, ease, delay: 0.04 } },
+  },
+  exit: ({ dir, dy }: Shift) => ({
+    opacity: 0,
+    x: dir * -32,
+    y: dy,
+    scale: 0.985,
+    transition: { y: { duration: 0 }, x: { duration: 0.24, ease: [0.4, 0, 0.8, 0.6] as const }, scale: { duration: 0.24 }, opacity: { duration: 0.18 } },
+  }),
+};
 
 const EMPTY: AppData = { meals: [], points: [], items: [], redemptions: [], summaries: [], streaks: [] };
 
@@ -116,7 +138,6 @@ function Root() {
 function Main({ me, reloadMe }: { me: Ctx["me"]; reloadMe: () => Promise<void> }) {
   const { t } = useI18n();
   const [tab, setTab] = useState<Tab>(readTab);
-  const [dir, setDir] = useState(0);
   const [data, setData] = useState<AppData>(EMPTY);
   const [loaded, setLoaded] = useState(false);
   const [composer, setComposer] = useState(() => new URLSearchParams(location.search).get("nuevo") === "1");
@@ -164,15 +185,34 @@ function Main({ me, reloadMe }: { me: Ctx["me"]; reloadMe: () => Promise<void> }
     };
   }, [reload]);
 
+  // Cada pestaña recuerda hasta dónde la bajaste. Al cambiar, la pantalla que sale se compensa (dy)
+  // para que no salte cuando la ventana se mueve al scroll de la que entra.
+  const scrollMemory = useRef<Partial<Record<Tab, number>>>({});
+  const [shift, setShift] = useState({ dir: 0, dy: 0 });
+  const pendingScroll = useRef<number | null>(null);
+
   const go = useCallback(
     (next: Tab) => {
-      setDir(TABS.indexOf(next) > TABS.indexOf(tab) ? 1 : -1);
+      if (next === tab) {
+        window.scrollTo({ top: 0, behavior: "smooth" });
+        return;
+      }
+      const from = window.scrollY;
+      scrollMemory.current[tab] = from;
+      const to = scrollMemory.current[next] ?? 0;
+      pendingScroll.current = to;
+      setShift({ dir: TABS.indexOf(next) > TABS.indexOf(tab) ? 1 : -1, dy: to - from });
       setTab(next);
       history.replaceState(null, "", next === "marcador" ? "/" : `/?tab=${next}`);
-      window.scrollTo({ top: 0 });
     },
     [tab],
   );
+
+  useLayoutEffect(() => {
+    if (pendingScroll.current === null) return;
+    window.scrollTo({ top: pendingScroll.current });
+    pendingScroll.current = null;
+  }, [tab]);
 
   const balances = useMemo(() => {
     const b: Record<string, number> = { [me.userId]: 0 };
@@ -192,20 +232,15 @@ function Main({ me, reloadMe }: { me: Ctx["me"]; reloadMe: () => Promise<void> }
   return (
     <div className="app">
 
-      <AnimatePresence mode="popLayout" initial={false} custom={dir}>
+      <AnimatePresence mode="popLayout" initial={false} custom={shift}>
         <motion.main
           key={tab}
           className="screen"
-          custom={dir}
-          variants={{
-            enter: (d: number) => ({ opacity: 0, x: d * 28 }),
-            center: { opacity: 1, x: 0 },
-            exit: (d: number) => ({ opacity: 0, x: d * -18, transition: { duration: 0.14 } }),
-          }}
+          custom={shift}
+          variants={TAB_MOTION}
           initial="enter"
           animate="center"
           exit="exit"
-          transition={{ duration: 0.32, ease }}
         >
           {tab === "config" ? (
             <ConfigScreen ctx={ctx} />
@@ -256,7 +291,15 @@ function TabBtn({ tab, cur, go, Icon, IconOn, label }: { tab: Tab; cur: Tab; go:
   return (
     <motion.button className={`tab ${on ? "on" : ""}`} onClick={() => go(tab)} aria-current={on ? "page" : undefined} whileTap={press}>
       {on && <motion.span layoutId="tab-dot" className="tab-dot" transition={spring} />}
-      {on ? <IconOn aria-hidden /> : <Icon aria-hidden />}
+      <motion.span
+        key={on ? "on" : "off"}
+        className="tab-icon"
+        initial={on ? { scale: 0.6, y: 4 } : false}
+        animate={{ scale: 1, y: 0 }}
+        transition={{ type: "spring", stiffness: 520, damping: 20 }}
+      >
+        {on ? <IconOn aria-hidden /> : <Icon aria-hidden />}
+      </motion.span>
       <span className="tab-label">{label}</span>
     </motion.button>
   );

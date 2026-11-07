@@ -51,6 +51,9 @@ export function createSupabaseApi(url: string, key: string): Api {
 
     async signOut() {
       cachedMe = null;
+      signed.clear();
+      // Las fotos guardadas en este celu se borran al salir (las guarda el service worker).
+      if (typeof caches !== "undefined") await caches.delete("brote-photos-v1").catch(() => false);
       await sb.auth.signOut();
     },
 
@@ -120,7 +123,7 @@ export function createSupabaseApi(url: string, key: string): Api {
     async addMeal({ kind, description, photo, localDate }) {
       const me = await requireMe();
       const path = `${me.profile!.couple_id}/${me.userId}/${crypto.randomUUID()}.jpg`;
-      check(await sb.storage.from(BUCKET).upload(path, photo, { contentType: "image/jpeg", upsert: false }));
+      check(await sb.storage.from(BUCKET).upload(path, photo, { contentType: "image/jpeg", upsert: false, cacheControl: "31536000" }));
       const res = await sb.from("meals").insert({ kind, description, photo_path: path, local_date: localDate });
       if (res.error) {
         await sb.storage.from(BUCKET).remove([path]);
