@@ -10,6 +10,9 @@ export const LANGS: { id: Lang; label: string; flag: string }[] = [
 
 const PT: Record<string, string> = {
   // ---- Feira ----
+  "Entrá a tu puesto": "Entre na sua barraca",
+  "Email o contraseña incorrectos": "E-mail ou senha incorretos",
+  "Demasiados intentos, esperá un minuto": "Muitas tentativas, espere um minuto",
   "No subiste fruta ni verdura el {date}": "Você não postou fruta nem verdura em {date}",
   "{name} no subió fruta ni verdura el {date}": "{name} não postou fruta nem verdura em {date}",
   "Vas ganando por {n}": "Você está ganhando por {n}",
@@ -19,15 +22,8 @@ const PT: Record<string, string> = {
   "Config": "Config",
   "Racha {n}": "Sequência {n}",
   "Gana": "Ganha",
-  "Entrá con tu email": "Entre com seu e-mail",
   "Email": "E-mail",
-  "Enviando…": "Enviando…",
-  "Mandame el acceso": "Me manda o acesso",
-  "Revisá tu mail": "Confira seu e-mail",
-  "Te mandamos un link y un código a {email}. Tocá el link o escribí el código acá.": "Mandamos um link e um código para {email}. Toque no link ou digite o código aqui.",
-  "Código": "Código",
   "Entrando…": "Entrando…",
-  "Usar otro email": "Usar outro e-mail",
   "¿Cómo te llamamos?": "Como a gente te chama?",
   "Empezar": "Começar",
   "Salir": "Sair",
@@ -102,9 +98,6 @@ const PT: Record<string, string> = {
   "Activadas en este celu": "Ativadas neste celular",
   "Las bloqueaste. Activalas en Ajustes del celu, Notificaciones, Brote.": "Você bloqueou. Ative em Ajustes do celular, Notificações, Brote.",
   "En iPhone primero agregá Brote a la pantalla de inicio.": "No iPhone, primeiro adicione o Brote à tela de início.",
-  "Código incorrecto o vencido": "Código incorreto ou vencido",
-  "Ese email no tiene acceso a Brote": "Esse e-mail não tem acesso ao Brote",
-  "Esperá un minuto antes de pedir otro mail": "Espere um minuto antes de pedir outro e-mail",
   // login
   "¿Quién sos?": "Quem é você?",
   "Contraseña": "Senha",
@@ -114,7 +107,6 @@ const PT: Record<string, string> = {
   "Falta configurar el email de {name} (VITE_{KEY}_EMAIL).": "Falta configurar o e-mail de {name} (VITE_{KEY}_EMAIL).",
   "Preparando todo…": "Preparando tudo…",
   // errores
-  "Contraseña incorrecta": "Senha incorreta",
   "No te alcanzan los puntos": "Você não tem pontos suficientes",
   "Ese premio ya no existe": "Esse prêmio não existe mais",
   "No podés revisar tu propia comida": "Você não pode avaliar sua própria comida",
@@ -257,9 +249,8 @@ export function errorKey(raw: string): string {
   if (/cannot_review/.test(raw)) return "No podés revisar tu propia comida";
   if (/not_pending/.test(raw)) return "Ese canje ya estaba cumplido";
   if (/app_full/.test(raw)) return "La app ya tiene sus 2 usuarios";
-  if (/token has expired|is invalid|otp_expired|invalid.*(otp|token)/i.test(raw)) return "Código incorrecto o vencido";
-  if (/Signups not allowed|not allowed for otp|User not found/i.test(raw)) return "Ese email no tiene acceso a Brote";
-  if (/rate limit|security purposes/i.test(raw)) return "Esperá un minuto antes de pedir otro mail";
+  if (/Invalid login credentials/i.test(raw)) return "Email o contraseña incorrectos";
+  if (/rate limit|too many/i.test(raw)) return "Demasiados intentos, esperá un minuto";
   if (/row-level security/i.test(raw)) return "Ya no se puede cargar ese día";
   return raw;
 }

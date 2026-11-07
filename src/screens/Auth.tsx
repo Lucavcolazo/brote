@@ -1,6 +1,6 @@
 import { AnimatePresence, motion } from "motion/react";
 import { useState, type FormEvent } from "react";
-import { PiArrowLeftBold, PiArrowRightBold, PiEnvelopeSimpleBold } from "react-icons/pi";
+import { PiArrowRightBold } from "react-icons/pi";
 import { api } from "../api";
 import { Avatar } from "../avatar/Avatar";
 import { DEFAULT_AVATARS } from "../avatar/model";
@@ -37,32 +37,17 @@ function LoginHeader() {
 
 export function LoginScreen() {
   const { t, lang, setLang } = useI18n();
-  const [step, setStep] = useState<"email" | "code">("email");
   const [email, setEmail] = useState("");
-  const [code, setCode] = useState("");
+  const [password, setPassword] = useState("");
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState("");
 
-  async function sendEmail(e: FormEvent) {
+  async function submit(e: FormEvent) {
     e.preventDefault();
     setBusy(true);
     setError("");
     try {
-      await api.sendLoginEmail(email.trim().toLowerCase());
-      setStep("code");
-    } catch (err) {
-      setError(errMsg(err, t));
-    } finally {
-      setBusy(false);
-    }
-  }
-
-  async function verify(e: FormEvent) {
-    e.preventDefault();
-    setBusy(true);
-    setError("");
-    try {
-      await api.verifyLoginCode(email.trim().toLowerCase(), code.trim());
+      await api.signIn(email.trim().toLowerCase(), password);
     } catch (err) {
       setError(errMsg(err, t));
       setBusy(false);
@@ -72,76 +57,51 @@ export function LoginScreen() {
   return (
     <div className="login">
       <LoginHeader />
-      <AnimatePresence mode="wait" initial={false}>
-        {step === "email" ? (
-          <motion.form
-            key="email"
-            className="login-body"
-            onSubmit={sendEmail}
-            initial={{ opacity: 0, x: -20 }}
-            animate={{ opacity: 1, x: 0 }}
-            exit={{ opacity: 0, x: -20 }}
-            transition={{ duration: 0.28, ease }}
-          >
-            <h1>{t("Entrá con tu email")}</h1>
-            <label className="field">
-              <span>{t("Email")}</span>
-              <input
-                className="input"
-                type="email"
-                inputMode="email"
-                autoComplete="email"
-                required
-                value={email}
-                onChange={(e) => setEmail(e.target.value)}
-                placeholder="nombre@mail.com"
-              />
-            </label>
-            <LangPicker value={lang} onChange={setLang} />
-            {error && <p className="error-text" role="alert">{error}</p>}
-            <motion.button className="btn btn-ink btn-block" disabled={busy || !email} whileTap={press}>
-              <PiEnvelopeSimpleBold aria-hidden />
-              {busy ? t("Enviando…") : t("Mandame el acceso")}
-            </motion.button>
-          </motion.form>
-        ) : (
-          <motion.form
-            key="code"
-            className="login-body"
-            onSubmit={verify}
-            initial={{ opacity: 0, x: 20 }}
-            animate={{ opacity: 1, x: 0 }}
-            exit={{ opacity: 0, x: 20 }}
-            transition={{ duration: 0.28, ease }}
-          >
-            <h1>{t("Revisá tu mail")}</h1>
-            <p>{t("Te mandamos un link y un código a {email}. Tocá el link o escribí el código acá.", { email })}</p>
-            <label className="field">
-              <span>{t("Código")}</span>
-              <input
-                className="input code-input"
-                inputMode="numeric"
-                autoComplete="one-time-code"
-                maxLength={6}
-                required
-                value={code}
-                onChange={(e) => setCode(e.target.value.replace(/\D/g, ""))}
-                placeholder="000000"
-                autoFocus
-              />
-            </label>
-            {error && <p className="error-text" role="alert">{error}</p>}
-            <motion.button className="btn btn-ink btn-block" disabled={busy || code.length < 6} whileTap={press}>
-              {busy ? t("Entrando…") : t("Entrar")}
-              <PiArrowRightBold aria-hidden />
-            </motion.button>
-            <motion.button type="button" className="btn btn-soft btn-block" onClick={() => setStep("email")} whileTap={press}>
-              <PiArrowLeftBold aria-hidden />
-              {t("Usar otro email")}
-            </motion.button>
-          </motion.form>
-        )}
-      </AnimatePresence>
+      <motion.form
+        className="login-body"
+        onSubmit={submit}
+        initial={{ opacity: 0, y: 12 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ duration: 0.35, ease }}
+      >
+        <h1>{t("Entrá a tu puesto")}</h1>
+        <label className="field">
+          <span>{t("Email")}</span>
+          <input
+            className="input"
+            type="email"
+            inputMode="email"
+            autoComplete="username"
+            required
+            value={email}
+            onChange={(e) => setEmail(e.target.value)}
+            placeholder="nombre@mail.com"
+          />
+        </label>
+        <label className="field">
+          <span>{t("Contraseña")}</span>
+          <input
+            className="input"
+            type="password"
+            autoComplete="current-password"
+            required
+            value={password}
+            onChange={(e) => setPassword(e.target.value)}
+          />
+        </label>
+        <LangPicker value={lang} onChange={setLang} />
+        <AnimatePresence>
+          {error && (
+            <motion.p className="error-text" role="alert" initial={{ opacity: 0, y: -4 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0 }}>
+              {error}
+            </motion.p>
+          )}
+        </AnimatePresence>
+        <motion.button className="btn btn-ink btn-block" disabled={busy || !email || !password} whileTap={press}>
+          {busy ? t("Entrando…") : t("Entrar")}
+          <PiArrowRightBold aria-hidden />
+        </motion.button>
+      </motion.form>
     </div>
   );
 }

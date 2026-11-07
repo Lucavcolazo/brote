@@ -31,7 +31,7 @@ npm install
 npm run dev
 ```
 
-Sin `.env` arranca en modo demo, con datos inventados: poné cualquier email (si empieza con "gio" entrás como Giovanna) y cualquier código de 6 dígitos.
+Sin `.env` arranca en modo demo, con datos inventados: poné cualquier email y contraseña (si el email empieza con "gio" entrás como Giovanna).
 
 ## Puesta en marcha real
 
@@ -39,17 +39,10 @@ Sin `.env` arranca en modo demo, con datos inventados: poné cualquier email (si
 
 1. Creá un proyecto en [supabase.com](https://supabase.com).
 2. **SQL Editor** → pegá y ejecutá [supabase/migrations/20261106000000_brote.sql](supabase/migrations/20261106000000_brote.sql).
-3. **Authentication → Sign In / Providers**: dejá activo *Email* y desactivá *Allow new users to sign up* (la app es cerrada: solo entran las cuentas que crees).
-4. **Authentication → Users → Add user → Create new user**: creá las 2 cuentas con sus emails (marcá *Auto Confirm User*; la contraseña no se usa).
-5. **Authentication → Emails → Magic Link**: agregá el código al mail para poder entrar desde la app instalada (en iPhone el link abre Safari, no la app). Por ejemplo:
+3. **Authentication → Sign In / Providers → Email**: dejá activo *Email* y desactivá *Allow new users to sign up* (la app es cerrada: solo entran las cuentas que crees vos).
+4. **Authentication → Users → Add user → Create new user**: creá las 2 cuentas con email y contraseña, y marcá *Auto Confirm User*.
 
-   ```html
-   <h2>Entrar a Brote</h2>
-   <p>Tu código: <strong>{{ .Token }}</strong></p>
-   <p>O tocá <a href="{{ .ConfirmationURL }}">este link</a>.</p>
-   ```
-
-6. **Authentication → URL Configuration**: *Site URL* = la URL de la app en Vercel, y agregala también en *Redirect URLs*.
+La sesión no caduca: cada uno entra una vez y queda adentro hasta tocar "Cerrar sesión" (no actives *Time-box user sessions* ni *Inactivity timeout* en Authentication → Sessions). Para cambiar una contraseña: Authentication → Users → la cuenta → *Reset password* o *Update user*.
 
 La primera vez que cada uno entra elige su nombre y su idioma; el avatar y el nombre se cambian después en Config.
 
@@ -88,7 +81,7 @@ Importá el repo en Vercel (detecta Vite solo) y cargá las variables de [.env.e
 
 ### 6. En los celulares
 
-- **iPhone** (iOS 16.4+): abrir en Safari → Compartir → *Agregar a pantalla de inicio* → abrir desde el ícono → entrar con el email y el **código** del mail → **Config → Activar notificaciones**. En iPhone las notificaciones solo funcionan con la app instalada así.
+- **iPhone** (iOS 16.4+): abrir en Safari → Compartir → *Agregar a pantalla de inicio* → abrir desde el ícono → entrar con email y contraseña → **Config → Activar notificaciones**. En iPhone las notificaciones solo funcionan con la app instalada así.
 - **Android**: abrir en Chrome → *Instalar app* → entrar → **Config → Activar notificaciones**.
 
 ## Probar las tareas programadas a mano

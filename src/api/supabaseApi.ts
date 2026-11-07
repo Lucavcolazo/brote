@@ -13,7 +13,7 @@ function check<T = any>(res: { data: unknown; error: { message: string } | null 
 const cleanError = (msg: string) => msg;
 
 export function createSupabaseApi(url: string, key: string): Api {
-  const sb = createClient(url, key, { auth: { persistSession: true, autoRefreshToken: true, detectSessionInUrl: true, flowType: "implicit" } });
+  const sb = createClient(url, key, { auth: { persistSession: true, autoRefreshToken: true } });
   let cachedMe: Me | null = null;
 
   async function uid(): Promise<string | null> {
@@ -43,17 +43,8 @@ export function createSupabaseApi(url: string, key: string): Api {
       return () => data.subscription.unsubscribe();
     },
 
-    async sendLoginEmail(email) {
-      check(
-        await sb.auth.signInWithOtp({
-          email,
-          options: { shouldCreateUser: false, emailRedirectTo: location.origin },
-        }),
-      );
-    },
-
-    async verifyLoginCode(email, code) {
-      check(await sb.auth.verifyOtp({ email, token: code, type: "email" }));
+    async signIn(email, password) {
+      check(await sb.auth.signInWithPassword({ email, password }));
     },
 
     async signOut() {

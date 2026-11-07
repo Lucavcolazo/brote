@@ -107,8 +107,14 @@ export function createDemoApi(): Api {
     demo: true,
     async getUserId() { return signedIn ? meId : null; },
     onAuthChange(cb) { listeners.add(cb); return () => listeners.delete(cb); },
-    async sendLoginEmail(email) { await wait(400); const e = email.toLowerCase(); meId = e.startsWith("gio") ? GIO : LUCA; needsSetup = e.startsWith("nuevo"); },
-    async verifyLoginCode() { await wait(); signedIn = true; emit(); },
+    async signIn(email) {
+      await wait(400);
+      const e = email.toLowerCase();
+      meId = e.startsWith("gio") ? GIO : LUCA;
+      needsSetup = e.startsWith("nuevo");
+      signedIn = true;
+      emit();
+    },
     async signOut() { signedIn = false; emit(); },
 
     async getMe() {
