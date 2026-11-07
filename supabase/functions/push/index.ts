@@ -17,11 +17,32 @@ const db = createClient(env("SUPABASE_URL"), env("SUPABASE_SERVICE_ROLE_KEY"), {
   auth: { persistSession: false },
 });
 
-webpush.setVapidDetails(
-  env("VAPID_SUBJECT") || "https://example.com",
-  env("VAPID_PUBLIC_KEY"),
-  env("VAPID_PRIVATE_KEY"),
-);
+// Se configura recién al mandar, así un secreto mal cargado no tira abajo toda la función.
+let vapidReady = false;
+function ensureVapid() {
+  if (vapidReady) return;
+  webpush.setVapidDetails(
+    env("VAPID_SUBJECT").trim() || "https://example.com",
+    env("VAPID_PUBLIC_KEY").trim(),
+    env("VAPID_PRIVATE_KEY").trim(),
+  );
+  vapidReady = true;
+}
+
+// Diagnóstico sin mostrar valores: dice qué secreto falta o está mal.
+function configReport() {
+  const r: Record<string, string> = {};
+  for (const k of ["CRON_SECRET", "VAPID_PUBLIC_KEY", "VAPID_PRIVATE_KEY", "VAPID_SUBJECT", "SUPABASE_URL", "SUPABASE_SERVICE_ROLE_KEY"]) {
+    r[k] = env(k) ? "ok" : "falta";
+  }
+  try {
+    ensureVapid();
+    r.vapid = "ok";
+  } catch (e) {
+    r.vapid = String((e as Error).message ?? e);
+  }
+  return r;
+}
 
 type Push = { title: string; body: string; url?: string; tag?: string };
 type Lang = "es" | "pt";
@@ -88,6 +109,8 @@ async function sendTo(userIds: string[], msg: Push): Promise<number> {
     .select("id, endpoint, p256dh, auth")
     .in("user_id", userIds);
   if (error) throw error;
+  if (!subs?.length) return 0;
+  ensureVapid();
 
   let sent = 0;
   await Promise.all(
@@ -128,6 +151,7 @@ async function coupleMembers(coupleId: string): Promise<Person[]> {
 
 // ---------- acciones ----------
 const actions: Record<string, (body: Record<string, unknown>) => Promise<unknown>> = {
+  check: async () => configReport(),
   async meal_created({ meal_id }) {
     const { data: meal } = await db.from("meals").select("*").eq("id", meal_id).single();
     if (!meal) return { skipped: "meal not found" };
