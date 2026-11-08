@@ -156,7 +156,7 @@ export function createSupabaseApi(url: string, key: string): Api {
 
     async listStoreItems() {
       return check(
-        await sb.from("store_items").select("id, title, emoji, cost, active").eq("active", true).order("cost"),
+        await sb.from("store_items").select("id, title, emoji, cost, active, created_by").eq("active", true).order("cost"),
       );
     },
 

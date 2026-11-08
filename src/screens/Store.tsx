@@ -1,5 +1,5 @@
 import { AnimatePresence, motion } from "motion/react";
-import { useState, type FormEvent } from "react";
+import { useState, type FormEvent, type ReactNode } from "react";
 import {
   PiCheckBold,
   PiHandshakeBold,
@@ -29,6 +29,11 @@ export function Store({ ctx }: { ctx: Ctx }) {
   const [busy, setBusy] = useState(false);
   const mine = balances[me.userId] ?? 0;
   const partnerName = me.partner?.name ?? "";
+  const partnerPts = me.partner ? balances[me.partner.id] ?? 0 : 0;
+  // Lo que cargó mi pareja lo canjeo yo; lo mío lo canjea mi pareja y solo yo lo edito.
+  const theirItems = data.items.filter((i) => i.created_by !== me.userId);
+  const myItems = data.items.filter((i) => i.created_by === me.userId);
+  const isEditing = editing && myItems.length > 0;
 
   const owedToMe = data.redemptions.filter((r) => r.status === "pendiente" && r.user_id === me.userId);
   const iOwe = data.redemptions.filter((r) => r.status === "pendiente" && r.user_id !== me.userId);
@@ -53,12 +58,6 @@ export function Store({ ctx }: { ctx: Ctx }) {
     <>
       <header className="page-head">
         <h1 className="title">{t("Tienda")}</h1>
-        {data.items.length > 0 && (
-          <motion.button className="btn btn-sm btn-soft" onClick={() => setEditing(!editing)} whileTap={press}>
-            {editing ? <PiCheckBold aria-hidden /> : <PiPencilSimpleBold aria-hidden />}
-            {editing ? t("Listo") : t("Editar")}
-          </motion.button>
-        )}
       </header>
       <Valance color={COLOR_HEX[avatarOf(me.profile).color]} />
 
@@ -112,41 +111,80 @@ export function Store({ ctx }: { ctx: Ctx }) {
         )}
       </AnimatePresence>
 
-      <section className="block">
-        <h2 className="section-title">{t("Premios")}</h2>
+      {me.partner && (
+        <section className="block">
+          <h2 className="section-title">{t("Premios de {name}", { name: partnerName })}</h2>
+          <p className="section-note">{t("Los canjeás con tus puntos y {name} te los cumple.", { name: partnerName })}</p>
+          {theirItems.length === 0 ? (
+            <div className="empty empty-sm">
+              <b>{t("{name} todavía no cargó premios", { name: partnerName })}</b>
+            </div>
+          ) : (
+            <motion.div className="prizes" layout>
+              <AnimatePresence initial={false}>
+                {theirItems.map((item) => (
+                  <PrizeRow key={item.id} item={item} locked={mine < item.cost}>
+                    <motion.button className="btn btn-sm btn-ink" disabled={mine < item.cost || busy} whileTap={press} onClick={() => setConfirmItem(item)}>
+                      {t("Canjear")}
+                    </motion.button>
+                  </PrizeRow>
+                ))}
+              </AnimatePresence>
+            </motion.div>
+          )}
+        </section>
+      )}
 
-        {data.items.length === 0 && !adding && (
-          <div className="empty" style={{ margin: 0 }}>
+      <section className="block">
+        <div className="section-head">
+          <h2 className="section-title">{t("Tus premios")}</h2>
+          <AnimatePresence initial={false}>
+            {myItems.length > 0 && (
+              <motion.button
+                key="edit"
+                className="btn btn-sm btn-soft"
+                onClick={() => setEditing(!isEditing)}
+                whileTap={press}
+                initial={{ opacity: 0, scale: 0.9 }}
+                animate={{ opacity: 1, scale: 1 }}
+                exit={{ opacity: 0, scale: 0.9 }}
+              >
+                {isEditing ? <PiCheckBold aria-hidden /> : <PiPencilSimpleBold aria-hidden />}
+                {isEditing ? t("Listo") : t("Editar")}
+              </motion.button>
+            )}
+          </AnimatePresence>
+        </div>
+        {me.partner && myItems.length > 0 && (
+          <p className="section-note">{t("Los canjea {name} con sus puntos y vos los cumplís.", { name: partnerName })}</p>
+        )}
+
+        {myItems.length === 0 && !adding && (
+          <div className="empty" style={{ margin: "0 0 10px" }}>
             <EmptyCrate />
-            <b>{t("Todavía no hay premios")}</b>
-            <p>{t("Cargá lo que se puede ganar con puntos: una cena, elegir la peli, zafar de los platos.")}</p>
+            <b>{t("Todavía no cargaste premios")}</b>
+            <p>
+              {me.partner
+                ? t("Cargá lo que {name} te puede pedir con sus puntos: una cena, elegir la peli, zafar de los platos.", { name: partnerName })
+                : t("Cargá lo que tu pareja te puede pedir con sus puntos: una cena, elegir la peli, zafar de los platos.")}
+            </p>
           </div>
         )}
 
         <motion.div className="prizes" layout>
           <AnimatePresence initial={false}>
-            {data.items.map((item) =>
-              editing ? (
+            {myItems.map((item) =>
+              isEditing ? (
                 <PrizeEditor key={item.id} item={item} busy={busy} act={act} />
               ) : (
-                <motion.div
-                  key={item.id}
-                  layout
-                  className={`prize ${mine >= item.cost ? "" : "locked"}`}
-                  initial={{ opacity: 0, y: 12 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  exit={{ opacity: 0, scale: 0.95 }}
-                  transition={{ duration: 0.3, ease }}
-                >
-                  <span className="price-tag">
-                    <b className="num">{item.cost}</b>
-                    <small>{t("PTS")}</small>
-                  </span>
-                  <span className="prize-title">{item.title}</span>
-                  <motion.button className="btn btn-sm btn-ink" disabled={mine < item.cost || busy} whileTap={press} onClick={() => setConfirmItem(item)}>
-                    {t("Canjear")}
-                  </motion.button>
-                </motion.div>
+                <PrizeRow key={item.id} item={item} locked={!me.partner || partnerPts < item.cost}>
+                  {me.partner && partnerPts >= item.cost && (
+                    <span className="prize-reach">
+                      <PiCheckBold aria-hidden />
+                      {t("Le alcanza")}
+                    </span>
+                  )}
+                </PrizeRow>
               ),
             )}
           </AnimatePresence>
@@ -191,7 +229,7 @@ export function Store({ ctx }: { ctx: Ctx }) {
               </span>
               <span className="prize-title">{confirmItem.title}</span>
             </div>
-            <p className="muted small">{t("Te quedan {left} pts y a {name} le llega un aviso.", { left: mine - confirmItem.cost, name: partnerName })}</p>
+            <p className="muted small">{t("Te quedan {left} pts. A {name} le llega un aviso para que lo cumpla.", { left: mine - confirmItem.cost, name: partnerName })}</p>
             <motion.button
               className="btn btn-ink btn-block"
               disabled={busy}
@@ -206,6 +244,27 @@ export function Store({ ctx }: { ctx: Ctx }) {
         )}
       </Sheet>
     </>
+  );
+}
+
+function PrizeRow({ item, locked, children }: { item: StoreItem; locked: boolean; children?: ReactNode }) {
+  const { t } = useI18n();
+  return (
+    <motion.div
+      layout
+      className={`prize ${locked ? "locked" : ""}`}
+      initial={{ opacity: 0, y: 12 }}
+      animate={{ opacity: 1, y: 0 }}
+      exit={{ opacity: 0, scale: 0.95 }}
+      transition={{ duration: 0.3, ease }}
+    >
+      <span className="price-tag">
+        <b className="num">{item.cost}</b>
+        <small>{t("PTS")}</small>
+      </span>
+      <span className="prize-title">{item.title}</span>
+      {children}
+    </motion.div>
   );
 }
 
@@ -254,7 +313,7 @@ function PrizeEditor({ item, busy, act }: { item: StoreItem; busy: boolean; act:
         disabled={busy}
         whileTap={press}
         aria-label={t("Quitar")}
-        onClick={() => confirm(t("¿Quitar \"{title}\" de la tienda?", { title: item.title })) && act(() => api.archiveStoreItem(item.id), t("Quitado"))}
+        onClick={() => confirm(t("¿Quitar \"{title}\" de tus premios?", { title: item.title })) && act(() => api.archiveStoreItem(item.id), t("Quitado"))}
       >
         <PiTrashBold />
       </motion.button>

@@ -8,6 +8,7 @@ const readMigration = (f) =>
 const migration = readMigration("20261106000000_brote.sql");
 const reactions = readMigration("20261107000000_reactions.sql");
 const reglas = readMigration("20261108000000_reglas.sql");
+const tienda = readMigration("20261109000000_tienda_por_persona.sql");
 
 const stubs = `
 create role anon nologin; create role authenticated nologin; create role service_role nologin bypassrls;
@@ -60,6 +61,7 @@ await db.exec(stubs);
 await db.exec(migration);
 await db.exec(reactions);
 await db.exec(reglas);
+await db.exec(tienda);
 ok(true, "migraciones aplicadas");
 
 const A = "00000000-0000-0000-0000-00000000000a";
@@ -79,10 +81,14 @@ await as(C, () => expectError(db.query(`select public.claim_profile('Intruso')`)
 ok((await as(A, () => all(`select * from public.store_items`))).length === 0, "la tienda arranca vacía");
 await as(A, () => db.query(`insert into public.store_items (title, cost) values ('Elijo la peli', 2), ('Zafo de los platos', 2), ('Masajes', 3), ('Desayuno', 5), ('Plan del finde', 6), ('Cena afuera', 10)`));
 const items = await as(A, () => all(`select * from public.store_items order by cost, title`));
-ok(items.length === 6, "Luca carga 6 premios");
-await as(B, () => db.query(`update public.store_items set cost = 4 where title = 'Desayuno'`));
-ok((await one(`select cost from public.store_items where title = 'Desayuno'`)).cost === 4, "Giovanna edita un premio");
-await as(B, () => db.query(`update public.store_items set cost = 5 where title = 'Desayuno'`));
+ok(items.length === 6 && items.every((i) => i.created_by === A), "Luca carga 6 premios a su nombre");
+await as(A, () => db.query(`update public.store_items set cost = 4 where title = 'Desayuno'`));
+ok((await one(`select cost from public.store_items where title = 'Desayuno'`)).cost === 4, "Luca edita su premio");
+await as(B, () => db.query(`update public.store_items set cost = 1, active = false where title = 'Desayuno'`));
+const desayuno = await one(`select cost, active from public.store_items where title = 'Desayuno'`);
+ok(desayuno.cost === 4 && desayuno.active, "Giovanna ve los premios de Luca pero no los puede editar ni sacar");
+await as(B, () => expectError(db.query(`insert into public.store_items (title, cost, created_by) values ('Trampa', 1, $1)`, [A]), /row-level security/, "no se puede cargar un premio a nombre del otro"));
+await as(A, () => db.query(`update public.store_items set cost = 5 where title = 'Desayuno'`));
 await as(A, () => db.query(`update public.profiles set avatar = $1 where id = $2`, [JSON.stringify({ shape: "bean", color: "tomato", eyes: "happy", mouth: "grin" }), A]));
 ok((await one(`select avatar->>'shape' as s from public.profiles where id = $1`, [A])).s === "bean", "Luca guarda su avatar");
 await as(A, () => db.query(`update public.profiles set avatar = '{"shape":"hack"}' where id = $1`, [B]));
@@ -159,15 +165,18 @@ ok(bal.find((r) => r.user_id === A).s === 3 && bal.find((r) => r.user_id === B).
 const masaje = items.find((i) => i.cost === 3);
 const peli = items.find((i) => i.title === 'Elijo la peli');
 const cena = items.find((i) => i.cost === 10);
+await as(A, () => expectError(db.query(`select public.redeem_item($1)`, [masaje.id]), /own_item/, "Luca no puede canjear sus propios premios"));
 await as(B, () => expectError(db.query(`select public.redeem_item($1)`, [masaje.id]), /not_enough_points/, "Giovanna (2 pts) no puede canjear algo de 3"));
-await as(A, () => expectError(db.query(`select public.redeem_item($1)`, [cena.id]), /not_enough_points/, "Luca no puede canjear la cena (10)"));
-const red = await as(A, () => one(`select * from public.redeem_item($1)`, [masaje.id]));
-ok(red.status === "pendiente", "Luca canjea masajes (3)");
+await as(B, () => expectError(db.query(`select public.redeem_item($1)`, [cena.id]), /not_enough_points/, "Giovanna no puede canjear la cena (10)"));
+const redPeli = await as(B, () => one(`select * from public.redeem_item($1)`, [peli.id]));
+ok(redPeli.status === "pendiente", "Giovanna canjea la peli (2) de la lista de Luca");
+ok((await one(`select sum(amount)::int as s from public.point_events where user_id = $1`, [B])).s === 0, "a Giovanna le quedan 0");
+await as(A, () => db.query(`select public.fulfill_redemption($1)`, [redPeli.id]));
+ok((await one(`select status from public.redemptions where id = $1`, [redPeli.id])).status === "cumplido", "Luca marca el canje como cumplido");
+const gMasaje = await as(B, () => one(`insert into public.store_items (title, cost) values ('Masajes de Gio', 3) returning *`));
+const red = await as(A, () => one(`select * from public.redeem_item($1)`, [gMasaje.id]));
+ok(red.status === "pendiente", "Luca canjea masajes (3) de la lista de Giovanna");
 ok((await one(`select sum(amount)::int as s from public.point_events where user_id = $1`, [A])).s === 0, "a Luca le quedan 0");
-await as(B, () => db.query(`select public.fulfill_redemption($1)`, [red.id]));
-ok((await one(`select status from public.redemptions where id = $1`, [red.id])).status === "cumplido", "Giovanna marca el canje como cumplido");
-await as(B, () => db.query(`select public.redeem_item($1)`, [peli.id]));
-ok(true, "Giovanna canjea la peli (2)");
 await as(A, () => expectError(db.query(`insert into public.point_events (couple_id, user_id, amount, kind) values ($1, $2, 100, 'adjust')`, [couple.id, A]), /permission denied/, "nadie se puede regalar puntos"));
 await as(A, () => db.query(`insert into public.store_items (title, emoji, cost) values ('Helado', '🍦', 4)`));
 ok((await as(B, () => all(`select * from public.store_items where title = 'Helado'`))).length === 1, "Luca agrega un premio y Giovanna lo ve");

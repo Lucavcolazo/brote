@@ -60,6 +60,8 @@ export interface StoreItem {
   emoji: string;
   cost: number;
   active: boolean;
+  /** Quién lo cargó: solo esa persona lo edita, y lo canjea su pareja. */
+  created_by: string | null;
 }
 
 export interface Redemption {

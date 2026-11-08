@@ -18,6 +18,8 @@ import {
   COLOR_HEX,
   EXTRAS,
   EYES,
+  FACES,
+  HANDS,
   MOUTHS,
   SHAPES,
   type AvatarConfig,
@@ -29,7 +31,7 @@ import { Segmented, Switch, errMsg, press, spring, useToast } from "../ui";
 import { LangPicker } from "./Auth";
 import { Valance } from "../components/Valance";
 
-type Part = "shape" | "color" | "eyes" | "mouth" | "extra";
+type Part = "shape" | "color" | "eyes" | "mouth" | "extra" | "face" | "hands";
 
 const PUSH_TEXT: Record<PushState, string> = {
   enabled: "Activadas en este celu",
@@ -89,14 +91,26 @@ export function ConfigScreen({ ctx }: { ctx: Ctx }) {
     });
 
   const shuffle = () =>
-    setDraft({ shape: pick(SHAPES), color: pick(COLORS), eyes: pick(EYES), mouth: pick(MOUTHS), extra: pick(EXTRAS), cheeks: Math.random() < 0.4 });
+    setDraft({
+      shape: pick(SHAPES),
+      color: pick(COLORS),
+      eyes: pick(EYES),
+      mouth: pick(MOUTHS),
+      extra: Math.random() < 0.7 ? pick(EXTRAS) : "none",
+      face: Math.random() < 0.45 ? pick(FACES) : "none",
+      hands: Math.random() < 0.7 ? pick(HANDS) : "none",
+      cheeks: Math.random() < 0.4,
+      freckles: Math.random() < 0.3,
+    });
 
   const parts: { value: Part; label: string }[] = [
     { value: "shape", label: t("Forma") },
     { value: "color", label: t("Color") },
     { value: "eyes", label: t("Ojos") },
     { value: "mouth", label: t("Boca") },
-    { value: "extra", label: t("Extra") },
+    { value: "extra", label: t("Cabeza") },
+    { value: "face", label: t("Cara") },
+    { value: "hands", label: t("Manos") },
   ];
 
   const options: { key: string; preview: AvatarConfig }[] =
@@ -104,7 +118,9 @@ export function ConfigScreen({ ctx }: { ctx: Ctx }) {
     : part === "color" ? COLORS.map((v) => ({ key: v, preview: { ...draft, color: v } }))
     : part === "eyes" ? EYES.map((v) => ({ key: v, preview: { ...draft, eyes: v } }))
     : part === "mouth" ? MOUTHS.map((v) => ({ key: v, preview: { ...draft, mouth: v } }))
-    : EXTRAS.map((v) => ({ key: v, preview: { ...draft, extra: v } }));
+    : part === "extra" ? EXTRAS.map((v) => ({ key: v, preview: { ...draft, extra: v } }))
+    : part === "face" ? FACES.map((v) => ({ key: v, preview: { ...draft, face: v } }))
+    : HANDS.map((v) => ({ key: v, preview: { ...draft, hands: v } }));
 
   const selectedKey = draft[part] as string;
 
@@ -190,10 +206,16 @@ export function ConfigScreen({ ctx }: { ctx: Ctx }) {
         </AnimatePresence>
 
         <AnimatePresence initial={false}>
-          {part === "extra" && (
-            <motion.div key="cheeks" className="toggle-row" initial={{ opacity: 0, height: 0 }} animate={{ opacity: 1, height: "auto" }} exit={{ opacity: 0, height: 0 }}>
-              {t("Cachetes")}
-              <Switch checked={draft.cheeks} onChange={(v) => setDraft({ ...draft, cheeks: v })} label={t("Cachetes")} />
+          {part === "face" && (
+            <motion.div key="face-toggles" className="toggles" initial={{ opacity: 0, height: 0 }} animate={{ opacity: 1, height: "auto" }} exit={{ opacity: 0, height: 0 }}>
+              <div className="toggle-row">
+                {t("Cachetes")}
+                <Switch checked={draft.cheeks} onChange={(v) => setDraft({ ...draft, cheeks: v })} label={t("Cachetes")} />
+              </div>
+              <div className="toggle-row">
+                {t("Pecas")}
+                <Switch checked={draft.freckles} onChange={(v) => setDraft({ ...draft, freckles: v })} label={t("Pecas")} />
+              </div>
             </motion.div>
           )}
         </AnimatePresence>

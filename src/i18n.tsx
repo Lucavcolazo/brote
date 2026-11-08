@@ -32,7 +32,10 @@ const PT: Record<string, string> = {
   "Color": "Cor",
   "Ojos": "Olhos",
   "Boca": "Boca",
-  "Extra": "Extra",
+  "Cabeza": "Cabeça",
+  "Cara": "Rosto",
+  "Manos": "Mãos",
+  "Pecas": "Sardas",
   "Tu avatar": "Seu avatar",
   "Deshacer cambios": "Desfazer mudanças",
   "Avatar al azar": "Avatar aleatório",
@@ -71,12 +74,9 @@ const PT: Record<string, string> = {
   "{name} tiene {n}": "{name} tem {n}",
   "Le debés a {name}": "Você deve para {name}",
   "Cumplido": "Cumprido",
-  "Todavía no hay premios": "Ainda não tem prêmios",
-  "Cargá lo que se puede ganar con puntos: una cena, elegir la peli, zafar de los platos.": "Cadastre o que dá para ganhar com pontos: um jantar, escolher o filme, escapar da louça.",
   "PTS": "PTS",
   "Canjear": "Trocar",
   "{n} pts": "{n} pts",
-  "Te quedan {left} pts y a {name} le llega un aviso.": "Vão sobrar {left} pts e {name} recebe um aviso.",
   "Canjeado": "Trocado",
   "Canjear por {n} pts": "Trocar por {n} pts",
   "Menos": "Menos",
@@ -174,10 +174,20 @@ const PT: Record<string, string> = {
   "Cumplí": "Cumpri",
   "Ya lo tuve": "Já recebi",
   "Marcado como cumplido": "Marcado como cumprido",
-  "Premios": "Prêmios",
+  "Premios de {name}": "Prêmios de {name}",
+  "Los canjeás con tus puntos y {name} te los cumple.": "Você troca com seus pontos e {name} cumpre.",
+  "{name} todavía no cargó premios": "{name} ainda não cadastrou prêmios",
+  "Tus premios": "Seus prêmios",
+  "Los canjea {name} con sus puntos y vos los cumplís.": "{name} troca com os pontos e você cumpre.",
+  "Todavía no cargaste premios": "Você ainda não cadastrou prêmios",
+  "Cargá lo que {name} te puede pedir con sus puntos: una cena, elegir la peli, zafar de los platos.": "Cadastre o que {name} pode te pedir com os pontos: um jantar, escolher o filme, escapar da louça.",
+  "Cargá lo que tu pareja te puede pedir con sus puntos: una cena, elegir la peli, zafar de los platos.": "Cadastre o que seu par pode te pedir com os pontos: um jantar, escolher o filme, escapar da louça.",
+  "Le alcanza": "Dá pra trocar",
+  "Te quedan {left} pts. A {name} le llega un aviso para que lo cumpla.": "Sobram {left} pts. {name} recebe um aviso para cumprir.",
+  "¿Quitar \"{title}\" de tus premios?": "Remover \"{title}\" dos seus prêmios?",
+  "Tus premios los canjea tu pareja": "Seus prêmios quem troca é seu par",
   "editar": "editar",
   "listo": "pronto",
-  "¿Quitar \"{title}\" de la tienda?": "Remover \"{title}\" da loja?",
   "Quitado": "Removido",
   "Canjear · {cost}": "Trocar · {cost}",
   "{cost} pts": "{cost} pts",
@@ -255,6 +265,7 @@ export function translate(lang: Lang, key: string, vars?: Record<string, string 
 export function errorKey(raw: string): string {
   if (/not_enough_points/.test(raw)) return "No te alcanzan los puntos";
   if (/item_not_found/.test(raw)) return "Ese premio ya no existe";
+  if (/own_item/.test(raw)) return "Tus premios los canjea tu pareja";
   if (/cannot_review/.test(raw)) return "No podés revisar tu propia comida";
   if (/not_pending/.test(raw)) return "Ese canje ya estaba cumplido";
   if (/app_full/.test(raw)) return "La app ya tiene sus 2 usuarios";

@@ -4,9 +4,9 @@ App web mobile (PWA) para dos: cada día cada uno sube una foto de la fruta o ve
 Si alguien pasa un día sin subir nada (o el otro le rechaza la foto), **el otro suma 1 punto**. Los puntos se canjean en la tienda.
 
 - **Marcador**: los dos puestos (toldo, avatar y cartel con puntos y racha), quién cumplió hoy y el feed de fotos. El otro marca cada foto como "Vale" o "No cuenta".
-- **Tienda**: arranca vacía; ustedes cargan, editan y borran los premios. Al canjear, al otro le llega un aviso y queda "pendiente" hasta que se cumple.
+- **Tienda**: cada uno carga su propia lista de premios (prendas que ofrece). Solo quien la cargó la edita o la borra; la pareja la ve y la canjea con sus puntos. Al canjear, al dueño le llega un aviso y queda "pendiente" hasta que lo cumple.
 - **Semana**: rachas (actual y mejor), calendario de la semana, resúmenes y movimientos de puntos.
-- **Config**: editor de avatar (forma, color, ojos, boca, extras), nombre, idioma (Español / Português BR) y notificaciones.
+- **Config**: editor de avatar (forma, color, ojos, boca, cabeza, cara con cachetes y pecas, y manos con gestos animados como los emojis), nombre, idioma (Español / Português BR) y notificaciones.
 
 ## Cómo funciona el tiempo (hora argentina)
 
@@ -100,5 +100,5 @@ Otras acciones: `close_day` (opcional `"date":"2026-11-05"`), `weekly_summary`, 
 - `npm run check:i18n`: avisa si algún texto de la UI no tiene traducción al portugués.
 - Textos: [src/i18n.tsx](src/i18n.tsx) (la clave es el texto en español).
 - Estilos: [src/styles.css](src/styles.css); los colores están como variables arriba de todo. Las piezas del mundo Feira (toldo, cartel, números que ruedan) están en [src/components/feira.tsx](src/components/feira.tsx).
-- Avatar: [src/avatar/model.ts](src/avatar/model.ts) (formas, colores, ojos, bocas, extras) y [src/avatar/Avatar.tsx](src/avatar/Avatar.tsx) (dibujo y animación).
+- Avatar: [src/avatar/model.ts](src/avatar/model.ts) (formas, colores, ojos, bocas, accesorios, gestos), [src/avatar/Avatar.tsx](src/avatar/Avatar.tsx) (dibujo y animación) y [src/avatar/Hands.tsx](src/avatar/Hands.tsx) (manos).
 - Íconos: [react-icons](https://react-icons.github.io/react-icons/), familia Phosphor (`react-icons/pi`). Animaciones: [Motion](https://motion.dev).
