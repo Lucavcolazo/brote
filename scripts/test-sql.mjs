@@ -9,6 +9,7 @@ const migration = readMigration("20261106000000_brote.sql");
 const reactions = readMigration("20261107000000_reactions.sql");
 const reglas = readMigration("20261108000000_reglas.sql");
 const tienda = readMigration("20261109000000_tienda_por_persona.sql");
+const extras = readMigration("20261110000000_margen_album_avisos.sql");
 
 const stubs = `
 create role anon nologin; create role authenticated nologin; create role service_role nologin bypassrls;
@@ -62,6 +63,7 @@ await db.exec(migration);
 await db.exec(reactions);
 await db.exec(reglas);
 await db.exec(tienda);
+await db.exec(extras);
 ok(true, "migraciones aplicadas");
 
 const A = "00000000-0000-0000-0000-00000000000a";
@@ -194,6 +196,18 @@ ok(sa.current_streak === 2 && sa.best_streak === 3, `racha Luca: actual ${sa.cur
 ok(sb.current_streak === 0 && sb.best_streak === 0, "racha Giovanna: 0 (su única comida fue rechazada)");
 const st2 = await one(`select * from private.user_streaks($1, date '${today}' - 1)`, [A]);
 ok(st2.current_streak === 1, "la racha sigue viva si el último día cumplido fue ayer");
+
+// --- álbum ---
+const keys = await all(`select w, private.album_key(w) as k from unnest(array['Dos Limones','frutillas','Tomates','una Banana','Maçã','kiwi']) as w`);
+ok(keys.map((r) => r.k).join(",") === "limon,frutilla,tomate,banana,maca,kiwi", `álbum normaliza nombres: ${keys.map((r) => r.k).join(",")}`);
+await db.exec(`insert into public.meals (user_id, couple_id, kind, description, photo_path, local_date) values
+  ('${A}', '${couple.id}', 'ambas', '2 bananas y una manzana', 'x/al1.jpg', date '${today}' - 9),
+  ('${A}', '${couple.id}', 'fruta', 'Banana', 'x/al2.jpg', date '${today}' - 10)`);
+const album = await as(A, () => all(`select * from public.couple_album() where user_id = $1`, [A]));
+const banana = album.find((r) => r.item === "banana");
+ok(banana && banana.times === 2 && album.some((r) => r.item === "manzana"), `álbum de Luca: ${album.map((r) => `${r.item}×${r.times}`).join(", ")}`);
+ok((await as(C, () => all(`select * from public.couple_album()`))).length === 0, "un tercero no ve el álbum");
+await db.exec(`delete from public.meals where photo_path in ('x/al1.jpg', 'x/al2.jpg')`);
 
 // --- resumen semanal ---
 const monday = (await one(`select (date '${today}' - ((extract(isodow from date '${today}')::int + 6) % 7))::date as m`)).m;

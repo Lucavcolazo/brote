@@ -81,6 +81,14 @@ const MSG = {
     l === "pt"
       ? { title: "Última chamada", body: partner ? `Hoje você não postou fruta nem verdura. Senão, ${partner} ganha 1 ponto.` : "Hoje você não postou fruta nem verdura." }
       : { title: "Última llamada", body: partner ? `Hoy no subiste fruta ni verdura. Si no, ${partner} se lleva 1 punto.` : "Hoy no subiste fruta ni verdura." },
+  remindLast: (l: Lang, partner: string | null): Push =>
+    l === "pt"
+      ? { title: "Faltam 45 minutos", body: partner ? `Posta sua fruta ou verdura antes da meia-noite ou ${partner} ganha 1 ponto.` : "Posta sua fruta ou verdura antes da meia-noite." }
+      : { title: "Te quedan 45 minutos", body: partner ? `Subí tu fruta o verdura antes de las 00 o ${partner} suma 1 punto.` : "Subí tu fruta o verdura antes de las 00." },
+  redemptionDue: (l: Lang, who: string, title: string, days: number): Push =>
+    l === "pt"
+      ? { title: `Você deve a ${who}: ${title}`, body: `Trocou há ${days} dias. Quando cumprir, marca na Loja.` }
+      : { title: `Le debés a ${who}: ${title}`, body: `Lo canjeó hace ${days} días. Cuando lo cumplas, marcalo en la Tienda.` },
   missed: (l: Lang, beneficiary: string): Push =>
     l === "pt" ? { title: "Ontem não teve fruta nem verdura", body: `+1 ponto para ${beneficiary}.` } : { title: "Ayer no hubo fruta ni verdura", body: `+1 punto para ${beneficiary}.` },
   earned: (l: Lang, failed: string): Push =>
@@ -209,8 +217,30 @@ const actions: Record<string, (body: Record<string, unknown>) => Promise<unknown
     for (const u of data ?? []) {
       const p = await profile(u.user_id);
       const lang = p?.lang ?? "es";
-      const msg = slot === "night" ? MSG.remindNight(lang, u.partner_name) : MSG.remindMidday(lang);
+      const msg = slot === "last" ? MSG.remindLast(lang, u.partner_name) : slot === "night" ? MSG.remindNight(lang, u.partner_name) : MSG.remindMidday(lang);
       sent += await sendTo([u.user_id], { ...msg, url: "/?tab=feed&nuevo=1", tag: "remind" });
+    }
+    return { pending: data?.length ?? 0, sent };
+  },
+
+  // Canjes pendientes hace 3 días o más: le recuerda a quien tiene que cumplirlos (uno por día).
+  async remind_redemptions({ days }) {
+    const minDays = Number(days) || 3;
+    const cutoff = new Date(Date.now() - minDays * 864e5).toISOString();
+    const { data, error } = await db
+      .from("redemptions")
+      .select("id, user_id, couple_id, title, created_at")
+      .eq("status", "pendiente")
+      .lt("created_at", cutoff)
+      .order("created_at");
+    if (error) throw error;
+    let sent = 0;
+    for (const r of data ?? []) {
+      const who = await profile(r.user_id);
+      const debtor = who && (await partnerOf(who.id, r.couple_id));
+      if (!who || !debtor) continue;
+      const age = Math.floor((Date.now() - new Date(r.created_at).getTime()) / 864e5);
+      sent += await sendTo([debtor.id], { ...MSG.redemptionDue(debtor.lang, who.name, r.title, age), url: "/?tab=tienda", tag: `due-${r.id}` });
     }
     return { pending: data?.length ?? 0, sent };
   },

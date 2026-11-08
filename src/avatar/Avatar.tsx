@@ -13,6 +13,7 @@ import {
   type AvatarConfig,
   type EyesId,
   type FaceId,
+  type HandsId,
   type MouthId,
 } from "./model";
 
@@ -24,13 +25,16 @@ interface Props {
   size?: number;
   /** "alive" = parpadea y mira; "still" = quieto (listas, marcadores chicos) */
   mode?: "alive" | "still";
-  mood?: "neutral" | "happy" | "sad";
+  /** Cómo se siente ahora: cambia ojos, boca y (si está preocupado) le aparece una gotita. */
+  mood?: "neutral" | "happy" | "sad" | "worried";
+  /** Un gesto de manos que pisa por un rato el que eligió la persona (festejos, toques). */
+  gesture?: HandsId | null;
   title?: string;
   /** Mostrar las manos. Por defecto solo cuando el avatar es lo bastante grande para que se lean. */
   hands?: boolean;
 }
 
-export function Avatar({ config, size = 48, mode = "alive", mood = "neutral", title, hands = size >= 34 }: Props) {
+export function Avatar({ config, size = 48, mode = "alive", mood = "neutral", gesture, title, hands = size >= 34 }: Props) {
   const reduce = useReducedMotion();
   const alive = mode === "alive" && !reduce;
   const uid = useId();
@@ -84,7 +88,7 @@ export function Avatar({ config, size = 48, mode = "alive", mood = "neutral", ti
   const ink = featureColor(config.color);
   const top = topY(config.shape);
   const eyes = mood === "happy" && config.eyes !== "wink" ? "happy" : config.eyes;
-  const mouth = mood === "sad" ? "flat" : config.mouth;
+  const mouth = mood === "sad" ? "flat" : mood === "worried" ? "oh" : config.mouth;
   const handFill = shade(fill, config.color === "ink" ? 0.2 : 0.1);
   const handLine = shade(fill, config.color === "ink" ? -0.6 : -0.38);
 
@@ -206,7 +210,23 @@ export function Avatar({ config, size = 48, mode = "alive", mood = "neutral", ti
           )}
         </AnimatePresence>
 
-        {hands && <Hands id={config.hands} fill={handFill} line={handLine} alive={alive} />}
+        {/* preocupado: cejas para arriba y una gotita */}
+        <AnimatePresence initial={false}>
+          {mood === "worried" && (
+            <motion.g key="worried" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} transition={{ duration: 0.25 }}>
+              <path d="M32 39.5 L44 36.4 M56 36.4 L68 39.5" stroke={ink} strokeWidth={2.8} strokeLinecap="round" fill="none" />
+              <motion.g
+                animate={alive ? { y: [0, 5, 5], opacity: [0, 1, 0] } : { opacity: 1 }}
+                transition={alive ? { duration: 1.8, repeat: Infinity, repeatDelay: 0.6, ease: "easeIn" } : undefined}
+              >
+                <path d="M77 28 Q73.4 34 73.4 36.2 A3.6 3.6 0 0 0 80.6 36.2 Q80.6 34 77 28 Z" fill="#8FD0FF" stroke="#4E9FDB" strokeWidth={0.9} />
+                <ellipse cx="75.6" cy="35.4" rx="0.9" ry="1.4" fill="#fff" opacity={0.8} />
+              </motion.g>
+            </motion.g>
+          )}
+        </AnimatePresence>
+
+        {hands && <Hands id={gesture ?? config.hands} fill={handFill} line={handLine} alive={alive} />}
       </motion.g>
     </svg>
   );

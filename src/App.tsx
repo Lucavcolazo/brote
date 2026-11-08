@@ -12,7 +12,7 @@ import {
   PiTicketBold,
   PiTicketFill,
 } from "react-icons/pi";
-import { api, type Me, type Meal, type PointEvent, type Redemption, type StoreItem, type Streak, type WeeklySummary } from "./api";
+import { api, type Me, type Meal, type PointEvent, type Redemption, type StoreItem, type Streak, type AlbumItem, type WeeklySummary } from "./api";
 import { BootSkeleton, ScreenSkeleton } from "./components/Skeleton";
 import { avatarOf } from "./config";
 import { I18nProvider, useI18n } from "./i18n";
@@ -36,6 +36,7 @@ export interface AppData {
   redemptions: Redemption[];
   summaries: WeeklySummary[];
   streaks: Streak[];
+  album: AlbumItem[];
 }
 
 export interface Ctx {
@@ -71,7 +72,7 @@ const TAB_MOTION: Variants = {
   }),
 };
 
-const EMPTY: AppData = { meals: [], points: [], items: [], redemptions: [], summaries: [], streaks: [] };
+const EMPTY: AppData = { meals: [], points: [], items: [], redemptions: [], summaries: [], streaks: [], album: [] };
 
 function readTab(): Tab {
   const t = new URLSearchParams(location.search).get("tab");
@@ -144,15 +145,16 @@ function Main({ me, reloadMe }: { me: Ctx["me"]; reloadMe: () => Promise<void> }
 
   const reload = useCallback(async () => {
     const since = addDays(localToday(), -20);
-    const [meals, points, items, redemptions, summaries, streaks] = await Promise.all([
+    const [meals, points, items, redemptions, summaries, streaks, album] = await Promise.all([
       api.listMeals(since),
       api.listPointEvents(),
       api.listStoreItems(),
       api.listRedemptions(),
       api.listSummaries(),
       api.listStreaks(),
+      api.listAlbum(),
     ]);
-    setData({ meals, points, items, redemptions, summaries, streaks });
+    setData({ meals, points, items, redemptions, summaries, streaks, album });
     setLoaded(true);
   }, []);
 

@@ -17,6 +17,9 @@ export function NewMealSheet({ open, onClose, onSaved }: { open: boolean; onClos
   const [preview, setPreview] = useState<string | null>(null);
   const [busy, setBusy] = useState(false);
   const [processing, setProcessing] = useState(false);
+  // El día en que se sacó la foto. Si se sacó a las 23:58 y se sube a las 00:05, cuenta para ese día
+  // (la base acepta lo de ayer hasta las 00:15).
+  const [takenOn, setTakenOn] = useState<string | null>(null);
 
   useEffect(() => {
     if (!open) {
@@ -24,6 +27,7 @@ export function NewMealSheet({ open, onClose, onSaved }: { open: boolean; onClos
         setDesc("");
         setPhoto(null);
         setPreview(null);
+        setTakenOn(null);
       }, 300);
       return () => clearTimeout(timer);
     }
@@ -31,6 +35,7 @@ export function NewMealSheet({ open, onClose, onSaved }: { open: boolean; onClos
 
   async function onFile(f: File | undefined) {
     if (!f) return;
+    setTakenOn(localToday());
     setProcessing(true);
     try {
       const blob = await compressImage(f);
@@ -48,8 +53,9 @@ export function NewMealSheet({ open, onClose, onSaved }: { open: boolean; onClos
     if (!photo) return toast(t("Falta la foto"), "error");
     setBusy(true);
     try {
-      await api.addMeal({ kind, description: desc.trim(), photo, localDate: localToday() });
-      toast(t("Subida"));
+      const day = takenOn ?? localToday();
+      await api.addMeal({ kind, description: desc.trim(), photo, localDate: day });
+      toast(day === localToday() ? t("Subida") : t("Subida para ayer"));
       onSaved();
     } catch (err) {
       toast(errMsg(err, t), "error");

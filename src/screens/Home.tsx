@@ -6,6 +6,7 @@ import {
   PiCheckBold,
   PiCheckCircleFill,
   PiClockBold,
+  PiFireFill,
   PiEyeBold,
   PiImageBrokenBold,
   PiHourglassMediumBold,
@@ -15,12 +16,23 @@ import { api, type Meal, type Profile } from "../api";
 import type { Ctx } from "../App";
 import { Avatar } from "../avatar/Avatar";
 import { COLOR_HEX } from "../avatar/model";
-import { EmptyStall, Stall, type StallPlayer } from "../components/feira";
+import { RollingNumber } from "../components/feira";
+import { EmptyPlayer, Player, type PlayerEvent } from "../components/Players";
+import type { AvatarConfig } from "../avatar/model";
 import { QUICK_REACTION, ReactionBar, ReactionBurst, useReactions } from "../components/Reactions";
 import { avatarOf } from "../config";
 import { useI18n } from "../i18n";
-import { canReview, clock, dayLabel, localToday } from "../lib/dates";
+import { canReview, clock, dayLabel, localHour, localToday } from "../lib/dates";
 import { KindTag, ease, errMsg, press, spring, useToast } from "../ui";
+
+interface ScorePlayer {
+  id: string;
+  name: string;
+  avatar: AvatarConfig;
+  points: number;
+  streak: number;
+  doneToday: boolean;
+}
 
 export function Home({ ctx }: { ctx: Ctx }) {
   const { t, locale } = useI18n();
@@ -29,7 +41,7 @@ export function Home({ ctx }: { ctx: Ctx }) {
   const ateToday = (uid: string) => data.meals.some((m) => m.user_id === uid && m.local_date === today && m.review !== "rejected");
 
   const people = [me.profile, me.partner].filter(Boolean) as Profile[];
-  const players: StallPlayer[] = people.map((p) => ({
+  const players: ScorePlayer[] = people.map((p) => ({
     id: p.id,
     name: p.name,
     avatar: avatarOf(p),
@@ -41,6 +53,17 @@ export function Home({ ctx }: { ctx: Ctx }) {
   const leader = b && a.points !== b.points ? (a.points > b.points ? a : b) : null;
   const leaderColor = leader ? COLOR_HEX[leader.avatar.color] : "#C9C4BA";
   const gap = b ? Math.abs(a.points - b.points) : 0;
+
+  // Cómo está cada uno y qué festeja. Desde las 20:00, quien no subió nada se pone nervioso.
+  const lateHour = localHour() >= 20;
+  const moodOf = (p: ScorePlayer): "happy" | "worried" | "neutral" => (p.doneToday ? "happy" : lateHour ? "worried" : "neutral");
+  const myApproved = data.meals.find((m) => m.user_id === me.userId && m.local_date === today && m.review === "ok" && !m.review_auto);
+  const eventsOf = (p: ScorePlayer): PlayerEvent[] => {
+    const ev: PlayerEvent[] = [];
+    if (p.doneToday) ev.push({ key: `done-${p.id}-${today}`, gesture: "raise" }); // cumplió el día: 🙌
+    if (p.id !== me.userId && myApproved) ev.push({ key: `ok-${myApproved.id}`, gesture: "thumbs" }); // te aprobó la foto: 👍
+    return ev;
+  };
 
   const groups: { date: string; meals: Meal[] }[] = [];
   for (const m of data.meals) {
@@ -59,11 +82,21 @@ export function Home({ ctx }: { ctx: Ctx }) {
             {!me.partner ? "" : !leader ? t("Empate") : leader.id === me.userId ? t("Vas ganando por {n}", { n: gap }) : t("{name} gana por {n}", { name: leader.name, n: gap })}
           </span>
         </div>
-        <div className="stalls">
+        <div className="duo">
           {players.map((p, i) => (
-            <Stall key={p.id} p={p} leader={leader?.id === p.id} isMe={p.id === me.userId} index={i} />
+            <Player key={p.id} id={p.id} name={p.name} avatar={p.avatar} mood={moodOf(p)} leader={leader?.id === p.id} points={p.points} events={eventsOf(p)} index={i}>
+              <span className="player-name">{p.id === me.userId ? t("Vos") : p.name}</span>
+              <span className="player-score">
+                <RollingNumber value={p.points} />
+                <span className="unit">{t("pts")}</span>
+              </span>
+              <span className={`player-streak ${p.streak > 0 ? "on" : ""}`}>
+                <PiFireFill aria-hidden />
+                {t("Racha {n}", { n: p.streak })}
+              </span>
+            </Player>
           ))}
-          {!me.partner && <EmptyStall index={1} />}
+          {!me.partner && <EmptyPlayer />}
         </div>
       </section>
 

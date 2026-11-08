@@ -31,6 +31,14 @@ select cron.schedule('brote-recordatorio-mediodia', '30 15 * * *',
 select cron.schedule('brote-recordatorio-noche', '30 0 * * *',
   $$ select private.call_edge('remind', '{"slot":"night"}'::jsonb) $$);
 
+-- 23:15 ART todos los días: último aviso (quedan 45 minutos; hay margen hasta las 00:15 para terminar de subir).
+select cron.schedule('brote-recordatorio-ultimo', '15 2 * * *',
+  $$ select private.call_edge('remind', '{"slot":"last"}'::jsonb) $$);
+
+-- 19:00 ART todos los días: canjes sin cumplir hace 3 días o más.
+select cron.schedule('brote-canjes-pendientes', '0 22 * * *',
+  $$ select private.call_edge('remind_redemptions') $$);
+
 -- 8:00 ART todos los días: se cierra el día anterior (lo que nadie revisó se aprueba solo) y se reparten los puntos.
 select cron.schedule('brote-cierre-del-dia', '0 11 * * *',
   $$ select private.call_edge('close_day') $$);

@@ -3,9 +3,9 @@
 App web mobile (PWA) para dos: cada día cada uno sube una foto de la fruta o verdura que comió.
 Si alguien pasa un día sin subir nada (o el otro le rechaza la foto), **el otro suma 1 punto**. Los puntos se canjean en la tienda.
 
-- **Marcador**: los dos puestos (toldo, avatar y cartel con puntos y racha), quién cumplió hoy y el feed de fotos. El otro marca cada foto como "Vale" o "No cuenta".
+- **Marcador**: los dos personajes grandes con sus puntos y racha. Reaccionan a lo que pasa: festejan cuando cumplen el día o suman puntos, el otro te hace 👍 cuando te aprueba la foto, se ponen nerviosos desde las 20:00 si no subieron nada, y si los tocás hacen un gesto. Abajo, quién cumplió hoy y el feed de fotos. El otro marca cada foto como "Vale" o "No cuenta".
 - **Tienda**: cada uno carga su propia lista de premios (prendas que ofrece). Solo quien la cargó la edita o la borra; la pareja la ve y la canjea con sus puntos. Al canjear, al dueño le llega un aviso y queda "pendiente" hasta que lo cumple.
-- **Semana**: rachas (actual y mejor), calendario de la semana, resúmenes y movimientos de puntos.
+- **Semana**: rachas (actual y mejor), calendario de la semana, álbum (cada fruta y verdura distinta que comió cada uno, sacada de lo que escriben en las fotos), resúmenes y movimientos de puntos.
 - **Config**: editor de avatar (forma, color, ojos, boca, cabeza, cara con cachetes y pecas, y manos con gestos animados como los emojis), nombre, idioma (Español / Português BR) y notificaciones.
 
 ## Cómo funciona el tiempo (hora argentina)
@@ -13,7 +13,10 @@ Si alguien pasa un día sin subir nada (o el otro le rechaza la foto), **el otro
 | Cuándo | Qué pasa |
 |---|---|
 | Todos los días 12:30 | Recordatorio a quien no subió nada |
+| Todos los días 19:00 | Aviso a quien tiene un canje sin cumplir hace 3 días o más |
 | Todos los días 21:30 | "Última llamada" |
+| Todos los días 23:15 | "Te quedan 45 minutos" |
+| Todos los días 00:15 | Fin del margen: una foto sacada antes de las 00:00 se puede terminar de subir hasta acá, y cuenta para el día en que se sacó |
 | Todos los días 8:00 | Se cierra **el día anterior**: lo que nadie revisó se aprueba solo y quien no tiene comida aprobada le da 1 punto al otro |
 | Domingo 21:00 | Resumen semanal (puntos + comidas) |
 | Miércoles 04:00 | Se borran las fotos de las semanas ya resumidas. **La data queda**, solo se van las imágenes |

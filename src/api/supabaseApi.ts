@@ -172,6 +172,16 @@ export function createSupabaseApi(url: string, key: string): Api {
       return check(await sb.rpc("couple_streaks"));
     },
 
+    async listAlbum() {
+      // Si todavía no se corrió la migración del álbum, la app sigue andando sin él.
+      const { data, error } = await sb.rpc("couple_album");
+      if (error) {
+        console.warn("álbum:", error.message);
+        return [];
+      }
+      return data ?? [];
+    },
+
     async archiveStoreItem(id) {
       check(await sb.from("store_items").update({ active: false }).eq("id", id));
     },

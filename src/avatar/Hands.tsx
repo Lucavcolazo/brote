@@ -126,8 +126,8 @@ function layout(id: HandsId): HandSpec[] {
       ];
     case "clap":
       return [
-        { pose: "open", x: 37, y: 88, rot: 32, mirror: true, scale: 1.15, loop: { x: [0, 5, 0, 5, 0], transition: { duration: 0.8, repeat: Infinity, repeatDelay: 1.2 } } },
-        { pose: "open", x: 63, y: 88, rot: -32, scale: 1.15, loop: { x: [0, -5, 0, -5, 0], transition: { duration: 0.8, repeat: Infinity, repeatDelay: 1.2 } } },
+        { pose: "open", x: 38, y: 83, rot: 32, mirror: true, scale: 1.15, loop: { x: [0, 5, 0, 5, 0], transition: { duration: 0.8, repeat: Infinity, repeatDelay: 1.2 } } },
+        { pose: "open", x: 62, y: 83, rot: -32, scale: 1.15, loop: { x: [0, -5, 0, -5, 0], transition: { duration: 0.8, repeat: Infinity, repeatDelay: 1.2 } } },
       ];
     case "raise":
       return [
@@ -147,7 +147,8 @@ function layout(id: HandsId): HandSpec[] {
 export function Hands({ id, fill, line, alive }: { id: HandsId; fill: string; line: string; alive: boolean }) {
   const hands = layout(id);
   return (
-    <AnimatePresence initial={false} mode="popLayout">
+    // Sin "popLayout": ese modo mide cajas HTML y con grupos SVG deja la mano que sale trabada.
+    <AnimatePresence initial={false}>
       {hands.length > 0 && (
         <motion.g
           key={id}
@@ -173,11 +174,9 @@ function Hand({ spec: h, fill, line, alive }: { spec: HandSpec; fill: string; li
 
   // El loop se arranca a mano (no con `animate`): dentro de un AnimatePresence con initial={false}
   // Motion saltea las animaciones del primer render, y el loop nunca empezaría.
+  // (No se hace un "set" a otra escala antes: Motion heredaría esa velocidad y la mano se daría vuelta.)
   useEffect(() => {
-    controls.set({ ...rest, scale: scale * 0.4 });
-    void controls.start({ scale, transition: { type: "spring", stiffness: 420, damping: 16 } }).then(() => {
-      if (alive && h.loop) void controls.start({ ...h.loop, scale: h.loop.scale ?? scale });
-    });
+    void controls.start(alive && h.loop ? { ...h.loop, scale: h.loop.scale ?? scale } : rest);
     return () => controls.stop();
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [alive, loopKey, scale]);

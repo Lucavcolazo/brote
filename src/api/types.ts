@@ -11,6 +11,15 @@ export interface Profile {
   joined_at: string;
 }
 
+/** Una fruta o verdura distinta del álbum (sale de las descripciones de las fotos). */
+export interface AlbumItem {
+  user_id: string;
+  item: string;
+  label: string;
+  times: number;
+  first_date: string;
+}
+
 export interface Streak {
   user_id: string;
   current_streak: number;
@@ -115,6 +124,7 @@ export interface Api {
   createProfile(input: { name: string; lang: Profile["lang"] }): Promise<void>;
   updateProfile(patch: Partial<Pick<Profile, "name" | "lang" | "avatar">>): Promise<void>;
   listStreaks(): Promise<Streak[]>;
+  listAlbum(): Promise<AlbumItem[]>;
 
   listMeals(sinceDate: string): Promise<Meal[]>;
   addMeal(input: { kind: MealKind; description: string; photo: Blob; localDate: string }): Promise<void>;

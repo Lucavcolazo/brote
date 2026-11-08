@@ -1,11 +1,11 @@
 import { AnimatePresence, motion } from "motion/react";
 import { useState } from "react";
 import { PiCaretDownBold, PiCarrotBold, PiCheckBold, PiFireFill, PiOrangeSliceBold, PiTrophyBold, PiXBold } from "react-icons/pi";
-import type { Profile, WeeklySummary } from "../api";
+import type { AlbumItem, Profile, WeeklySummary } from "../api";
 import type { Ctx } from "../App";
 import { Avatar } from "../avatar/Avatar";
-import { COLOR_HEX } from "../avatar/model";
-import { Awning, RollingNumber } from "../components/feira";
+import { RollingNumber } from "../components/feira";
+import { Player } from "../components/Players";
 import { avatarOf } from "../config";
 import { useI18n } from "../i18n";
 import { addDays, localToday, mondayOf, shortDate, weekdayShort } from "../lib/dates";
@@ -33,36 +33,27 @@ export function Week({ ctx }: { ctx: Ctx }) {
         <span className="muted small">{t("Desde el {date}", { date: `${weekdayShort(monday, locale)} ${shortDate(monday, locale)}` })}</span>
       </header>
 
-      <section className="streaks" aria-label={t("Rachas")}>
+      <section className="duo duo-week" aria-label={t("Rachas")}>
         {people.map((p, i) => {
           const st = streakOf(p.id);
-          const av = avatarOf(p);
           return (
-            <div key={p.id} className="streak-stall">
-              <Awning color={COLOR_HEX[av.color]} delay={i * 0.08} />
-              <div className="streak-who">
-                <Avatar config={av} size={30} mode="still" />
-                {p.id === me.userId ? t("Vos") : p.name}
-              </div>
-              <div className="placard-wrap streak-hang">
-              <div className="placard streak-placard">
-                <span className="placard-num">
-                  <motion.span
-                    className="streak-flame"
-                    animate={st.current_streak > 0 ? { scale: [1, 1.12, 1], rotate: [0, -6, 0] } : { opacity: 0.35 }}
-                    transition={{ duration: 1.6, repeat: st.current_streak > 0 ? Infinity : 0, ease: "easeInOut" }}
-                  >
-                    <PiFireFill aria-hidden />
-                  </motion.span>
-                  <RollingNumber value={st.current_streak} />
-                </span>
-                <span className="streak-label">{st.current_streak === 1 ? t("día seguido") : t("días seguidos")}</span>
-              </div>
-              </div>
-              <div className="streak-best">
+            <Player key={p.id} id={p.id} name={p.name} avatar={avatarOf(p)} size={104} mood={st.current_streak > 0 ? "happy" : "neutral"} index={i}>
+              <span className="player-name">{p.id === me.userId ? t("Vos") : p.name}</span>
+              <span className="player-score streak-score">
+                <motion.span
+                  className="streak-flame"
+                  animate={st.current_streak > 0 ? { scale: [1, 1.12, 1], rotate: [0, -6, 0] } : { opacity: 0.35 }}
+                  transition={{ duration: 1.6, repeat: st.current_streak > 0 ? Infinity : 0, ease: "easeInOut" }}
+                >
+                  <PiFireFill aria-hidden />
+                </motion.span>
+                <RollingNumber value={st.current_streak} />
+              </span>
+              <span className="player-sub">{st.current_streak === 1 ? t("día seguido") : t("días seguidos")}</span>
+              <span className="player-streak">
                 <PiTrophyBold aria-hidden /> {t("Mejor racha: {n}", { n: st.best_streak })}
-              </div>
-            </div>
+              </span>
+            </Player>
           );
         })}
       </section>
@@ -98,6 +89,8 @@ export function Week({ ctx }: { ctx: Ctx }) {
           ))}
         </div>
       </section>
+
+      <Album ctx={ctx} people={people} monday={monday} />
 
       <section className="block">
         <h2 className="section-title">{t("Resúmenes")}</h2>
@@ -190,5 +183,70 @@ function SummaryCard({ s, meId }: { s: WeeklySummary; meId: string }) {
         )}
       </AnimatePresence>
     </article>
+  );
+}
+
+/** Cada fruta y verdura distinta que comió cada uno. Se arma sola con lo que escriben en cada foto. */
+function Album({ ctx, people, monday }: { ctx: Ctx; people: Profile[]; monday: string }) {
+  const { t } = useI18n();
+  const { me, data } = ctx;
+  const [open, setOpen] = useState(false);
+  const LIMIT = 14;
+  const byUser = (uid: string) => data.album.filter((a) => a.user_id === uid).sort((x, y) => y.first_date.localeCompare(x.first_date));
+  const cap = (s: string) => s.charAt(0).toLocaleUpperCase() + s.slice(1);
+  const anyMore = people.some((p) => byUser(p.id).length > LIMIT);
+
+  return (
+    <section className="block" aria-label={t("Álbum")}>
+      <h2 className="section-title">{t("Álbum")}</h2>
+      <p className="section-note">{t("Cada fruta y verdura distinta que comieron. Se arma solo con lo que escriben en cada foto.")}</p>
+      <div className="album">
+        {people.map((p) => {
+          const list = byUser(p.id);
+          const shown: AlbumItem[] = open ? list : list.slice(0, LIMIT);
+          return (
+            <div key={p.id} className="album-col">
+              <div className="album-head">
+                <Avatar config={avatarOf(p)} size={30} mode="still" />
+                <b>{p.id === me.userId ? t("Vos") : p.name}</b>
+                <span className="album-count num">
+                  <RollingNumber value={list.length} />
+                  <small>{list.length === 1 ? t("distinta") : t("distintas")}</small>
+                </span>
+              </div>
+              {list.length === 0 ? (
+                <p className="muted small">{t("Todavía nada. Escribí qué es en cada foto.")}</p>
+              ) : (
+                <motion.ul className="album-chips" layout>
+                  <AnimatePresence initial={false}>
+                    {shown.map((a, i) => (
+                      <motion.li
+                        key={a.item}
+                        layout
+                        className={a.first_date >= monday ? "new" : ""}
+                        initial={{ opacity: 0, scale: 0.7 }}
+                        animate={{ opacity: 1, scale: 1 }}
+                        exit={{ opacity: 0, scale: 0.7 }}
+                        transition={{ type: "spring", stiffness: 500, damping: 30, delay: Math.min(i, 12) * 0.02 }}
+                        title={a.first_date >= monday ? t("Nueva esta semana") : undefined}
+                      >
+                        {cap(a.label)}
+                        {a.times > 1 && <small className="num">×{a.times}</small>}
+                      </motion.li>
+                    ))}
+                  </AnimatePresence>
+                </motion.ul>
+              )}
+            </div>
+          );
+        })}
+      </div>
+      {anyMore && (
+        <button type="button" className="album-more" onClick={() => setOpen(!open)} aria-expanded={open}>
+          {open ? t("Ver menos") : t("Ver todas")}
+          <PiCaretDownBold aria-hidden style={{ rotate: open ? "180deg" : "0deg", transition: "rotate 0.3s" }} />
+        </button>
+      )}
+    </section>
   );
 }

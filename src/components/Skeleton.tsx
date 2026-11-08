@@ -52,13 +52,13 @@ export function HomeSkeleton() {
           <span className="wordmark">Brote</span>
           <Bone w={92} h={14} r={4} />
         </div>
-        <div className="stalls">
+        <div className="duo">
           {[0, 1].map((i) => (
-            <div key={i} className="sk-stall">
-              <Bone w="100%" h={50} r="10px 10px 18px 18px" />
-              <Bone w={64} h={64} r={22} style={{ marginTop: 8 }} />
-              <Bone w={74} h={16} r={4} style={{ marginTop: 8 }} />
-              <Bone w={132} h={100} r={6} className={i ? "tilt-r" : "tilt-l"} style={{ marginTop: 16 }} />
+            <div key={i} className="player">
+              <Bone w={96} h={96} r={34} style={{ margin: "16px 0" }} />
+              <Bone w={70} h={14} r={4} style={{ marginTop: 10 }} />
+              <Bone w={84} h={58} r={6} style={{ marginTop: 8 }} />
+              <Bone w={88} h={26} r={999} style={{ marginTop: 10 }} />
             </div>
           ))}
         </div>
@@ -122,12 +122,13 @@ export function WeekSkeleton() {
   return (
     <Busy>
       <PageHead title={t("Semana")} side={96} />
-      <section className="streaks">
+      <section className="duo duo-week">
         {[0, 1].map((i) => (
-          <div key={i} className="streak-stall">
-            <Bone w="100%" h={44} r="10px 10px 18px 18px" />
-            <Bone w={96} h={28} r={4} style={{ marginTop: 6 }} />
-            <Bone w="100%" h={92} r={6} className={i ? "tilt-r" : "tilt-l"} style={{ marginTop: 22 }} />
+          <div key={i} className="player">
+            <Bone w={78} h={78} r={28} style={{ margin: "13px 0" }} />
+            <Bone w={70} h={14} r={4} style={{ marginTop: 10 }} />
+            <Bone w={70} h={50} r={6} style={{ marginTop: 8 }} />
+            <Bone w={110} h={26} r={999} style={{ marginTop: 10 }} />
           </div>
         ))}
       </section>
