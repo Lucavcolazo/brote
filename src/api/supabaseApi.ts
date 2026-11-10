@@ -144,11 +144,34 @@ export function createSupabaseApi(url: string, key: string): Api {
       return check(await sb.rpc("react_meal", { p_meal: id, p_emoji: emoji }));
     },
 
+    async listExams() {
+      // Si todavía no se corrió la migración de notas, la app sigue andando sin ellas.
+      const { data, error } = await sb.from("exams").select("id, user_id, subject, grade, local_date, review, review_auto, created_at").order("created_at", { ascending: false }).limit(200);
+      if (error) {
+        console.warn("notas:", error.message);
+        return [];
+      }
+      return (data ?? []).map((e) => ({ ...e, grade: Number(e.grade) }));
+    },
+
+    async addExam(input) {
+      check(await sb.from("exams").insert(input));
+    },
+
+    async deleteExam(id) {
+      check(await sb.from("exams").delete().eq("id", id));
+    },
+
+    async reviewExam(id, verdict) {
+      check(await sb.rpc("review_exam", { p_exam: id, p_verdict: verdict }));
+    },
+
     async listPointEvents() {
       return check(
         await sb
           .from("point_events")
-          .select("id, user_id, amount, kind, source_user_id, ref_date, note, created_at")
+          // "*" para no romper si todavía falta la migración de notas (exam_id).
+          .select("*")
           .order("created_at", { ascending: false })
           .limit(500),
       );
@@ -230,9 +253,11 @@ export function createSupabaseApi(url: string, key: string): Api {
         .subscribe();
       // Canal aparte: si la tabla de reacciones todavía no existe, no se cae el realtime del resto.
       const rx = sb.channel("brote-reactions").on("postgres_changes", { event: "*", schema: "public", table: "meal_reactions" }, cb).subscribe();
+      const ex = sb.channel("brote-exams").on("postgres_changes", { event: "*", schema: "public", table: "exams" }, cb).subscribe();
       return () => {
         sb.removeChannel(ch);
         sb.removeChannel(rx);
+        sb.removeChannel(ex);
       };
     },
   };

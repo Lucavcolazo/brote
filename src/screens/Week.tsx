@@ -10,6 +10,7 @@ import { avatarOf } from "../config";
 import { useI18n } from "../i18n";
 import { addDays, localToday, mondayOf, shortDate, weekdayShort } from "../lib/dates";
 import { KIND_META, ease } from "../ui";
+import { fmtGrade } from "./Exams";
 
 export function Week({ ctx }: { ctx: Ctx }) {
   const { t, locale } = useI18n();
@@ -19,6 +20,14 @@ export function Week({ ctx }: { ctx: Ctx }) {
   const days = Array.from({ length: 7 }, (_, i) => addDays(monday, i));
   const people = [me.profile, me.partner].filter(Boolean) as Profile[];
   const nameOf = (id: string | null) => (id === me.userId ? t("Vos") : id === me.partner?.id ? me.partner.name : "");
+
+  // Movimiento de una nota: "Sacaste 8 en Análisis" / "Gio sacó 4 en Física".
+  const examLine = (examId: string | null | undefined, who: string | null, note: string | null) => {
+    const ex = data.exams.find((e) => e.id === examId);
+    if (!ex) return note ?? t("Nota de examen");
+    const vars = { grade: fmtGrade(ex.grade, locale), subject: ex.subject };
+    return who === me.userId ? t("Sacaste {grade} en {subject}", vars) : t("{name} sacó {grade} en {subject}", { ...vars, name: nameOf(who) });
+  };
 
   const status = (uid: string, d: string): "ok" | "miss" | "today" | "future" => {
     if (d > today) return "future";
@@ -109,7 +118,9 @@ export function Week({ ctx }: { ctx: Ctx }) {
             <span className="grow">
               <b>{nameOf(p.user_id)}</b>
               <small>
-                {p.kind === "miss" && p.ref_date
+                {p.kind === "exam" || p.exam_id
+                  ? examLine(p.exam_id, p.source_user_id, p.note)
+                  : p.kind === "miss" && p.ref_date
                   ? p.source_user_id === me.userId
                     ? t("No subiste fruta ni verdura el {date}", { date: `${weekdayShort(p.ref_date, locale)} ${shortDate(p.ref_date, locale)}` })
                     : t("{name} no subió fruta ni verdura el {date}", { name: nameOf(p.source_user_id), date: `${weekdayShort(p.ref_date, locale)} ${shortDate(p.ref_date, locale)}` })

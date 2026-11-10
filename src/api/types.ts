@@ -52,12 +52,26 @@ export interface Meal {
   reactions: MealReaction[];
 }
 
+/** La nota de un examen. Si vale: 6 o más da 1 punto a quien la sacó; menos de 6, a su pareja. */
+export interface Exam {
+  id: string;
+  user_id: string;
+  subject: string;
+  grade: number;
+  /** El día en que se cargó: se revisa hasta las 8:00 del día siguiente. */
+  local_date: string;
+  review: Verdict | null;
+  review_auto: boolean;
+  created_at: string;
+}
+
 export interface PointEvent {
   id: string;
   user_id: string;
   amount: number;
-  kind: "miss" | "redeem" | "adjust";
+  kind: "miss" | "redeem" | "adjust" | "exam";
   source_user_id: string | null;
+  exam_id?: string | null;
   ref_date: string | null;
   note: string | null;
   created_at: string;
@@ -132,6 +146,11 @@ export interface Api {
   reviewMeal(id: string, verdict: Verdict): Promise<void>;
   /** Una reacción por persona y foto: otra la cambia, la misma (o null) la saca. Devuelve la que quedó. */
   reactMeal(id: string, emoji: string | null): Promise<string | null>;
+
+  listExams(): Promise<Exam[]>;
+  addExam(input: { subject: string; grade: number }): Promise<void>;
+  deleteExam(id: string): Promise<void>;
+  reviewExam(id: string, verdict: Verdict): Promise<void>;
 
   listPointEvents(): Promise<PointEvent[]>;
   listStoreItems(): Promise<StoreItem[]>;

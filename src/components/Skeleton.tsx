@@ -157,6 +157,47 @@ export function WeekSkeleton() {
   );
 }
 
+export function ExamsSkeleton() {
+  const { t } = useI18n();
+  return (
+    <Busy>
+      <PageHead title={t("Notas")} />
+      <Valance color={GREY} />
+      <section className="exam-stats">
+        {[0, 1].map((i) => (
+          <div key={i} className="exam-stat">
+            <Bone w={90} h={34} r={10} />
+            <Bone w={70} h={44} r={6} style={{ marginTop: 6 }} />
+            <Bone w={100} h={13} r={4} style={{ marginTop: 4 }} />
+          </div>
+        ))}
+      </section>
+      <div className="block">
+        <Bone w="80%" h={14} r={4} style={{ display: "block", marginBottom: 12 }} />
+        <Bone w="100%" h={52} r={999} style={{ display: "block" }} />
+      </div>
+      <section className="block">
+        <div className="section-title">
+          <Bone w={110} h={13} r={4} />
+        </div>
+        <div className="exams">
+          {[0.6, 0.45].map((w, i) => (
+            <div key={i} className="exam">
+              <div className="exam-top">
+                <Bone w={58} h={52} r={6} />
+                <div className="exam-main" style={{ gap: 6 }}>
+                  <Bone w={`${w * 100}%`} h={17} r={4} />
+                  <Bone w={90} h={12} r={4} />
+                </div>
+              </div>
+            </div>
+          ))}
+        </div>
+      </section>
+    </Busy>
+  );
+}
+
 export function ConfigSkeleton() {
   const { t } = useI18n();
   return (
@@ -179,7 +220,7 @@ export function ConfigSkeleton() {
 }
 
 export function ScreenSkeleton({ tab }: { tab: Tab }) {
-  return tab === "tienda" ? <StoreSkeleton /> : tab === "semana" ? <WeekSkeleton /> : tab === "config" ? <ConfigSkeleton /> : <HomeSkeleton />;
+  return tab === "tienda" ? <StoreSkeleton /> : tab === "notas" ? <ExamsSkeleton /> : tab === "semana" ? <WeekSkeleton /> : tab === "config" ? <ConfigSkeleton /> : <HomeSkeleton />;
 }
 
 /** Lo que se ve mientras arranca la app: la pantalla que se va a abrir y la barra de abajo. */
@@ -190,7 +231,7 @@ export function BootSkeleton({ tab }: { tab: Tab }) {
         <ScreenSkeleton tab={tab} />
       </main>
       <div className="tabbar sk-tabbar" aria-hidden>
-        {[0, 1, 2, 3, 4].map((i) =>
+        {[0, 1, 2, 3, 4, 5].map((i) =>
           i === 2 ? <span key={i} className="fab sk-fab" /> : (
             <span key={i} className="tab">
               <Bone w={25} h={25} r={8} />

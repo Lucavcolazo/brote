@@ -5,6 +5,8 @@ import {
   PiCalendarDotsBold,
   PiCalendarDotsFill,
   PiCameraBold,
+  PiExamBold,
+  PiExamFill,
   PiSlidersHorizontalBold,
   PiSlidersHorizontalFill,
   PiStorefrontBold,
@@ -12,7 +14,7 @@ import {
   PiTicketBold,
   PiTicketFill,
 } from "react-icons/pi";
-import { api, type Me, type Meal, type PointEvent, type Redemption, type StoreItem, type Streak, type AlbumItem, type WeeklySummary } from "./api";
+import { api, type Exam, type Me, type Meal, type PointEvent, type Redemption, type StoreItem, type Streak, type AlbumItem, type WeeklySummary } from "./api";
 import { BootSkeleton, ScreenSkeleton } from "./components/Skeleton";
 import { avatarOf } from "./config";
 import { I18nProvider, useI18n } from "./i18n";
@@ -20,14 +22,15 @@ import { addDays, localToday } from "./lib/dates";
 import { refreshPushSubscription } from "./lib/push";
 import { LoginScreen, SetupScreen } from "./screens/Auth";
 import { ConfigScreen } from "./screens/Config";
+import { Exams } from "./screens/Exams";
 import { Home } from "./screens/Home";
 import { NewMealSheet } from "./screens/NewMeal";
 import { Store } from "./screens/Store";
 import { Week } from "./screens/Week";
 import { ToastProvider, ease, press, spring } from "./ui";
 
-export type Tab = "marcador" | "tienda" | "semana" | "config";
-const TABS: Tab[] = ["marcador", "tienda", "semana", "config"];
+export type Tab = "marcador" | "tienda" | "notas" | "semana" | "config";
+const TABS: Tab[] = ["marcador", "tienda", "notas", "semana", "config"];
 
 export interface AppData {
   meals: Meal[];
@@ -37,6 +40,7 @@ export interface AppData {
   summaries: WeeklySummary[];
   streaks: Streak[];
   album: AlbumItem[];
+  exams: Exam[];
 }
 
 export interface Ctx {
@@ -72,7 +76,7 @@ const TAB_MOTION: Variants = {
   }),
 };
 
-const EMPTY: AppData = { meals: [], points: [], items: [], redemptions: [], summaries: [], streaks: [], album: [] };
+const EMPTY: AppData = { meals: [], points: [], items: [], redemptions: [], summaries: [], streaks: [], album: [], exams: [] };
 
 function readTab(): Tab {
   const t = new URLSearchParams(location.search).get("tab");
@@ -145,7 +149,7 @@ function Main({ me, reloadMe }: { me: Ctx["me"]; reloadMe: () => Promise<void> }
 
   const reload = useCallback(async () => {
     const since = addDays(localToday(), -20);
-    const [meals, points, items, redemptions, summaries, streaks, album] = await Promise.all([
+    const [meals, points, items, redemptions, summaries, streaks, album, exams] = await Promise.all([
       api.listMeals(since),
       api.listPointEvents(),
       api.listStoreItems(),
@@ -153,8 +157,9 @@ function Main({ me, reloadMe }: { me: Ctx["me"]; reloadMe: () => Promise<void> }
       api.listSummaries(),
       api.listStreaks(),
       api.listAlbum(),
+      api.listExams(),
     ]);
-    setData({ meals, points, items, redemptions, summaries, streaks, album });
+    setData({ meals, points, items, redemptions, summaries, streaks, album, exams });
     setLoaded(true);
   }, []);
 
@@ -255,7 +260,7 @@ function Main({ me, reloadMe }: { me: Ctx["me"]; reloadMe: () => Promise<void> }
                 exit={{ opacity: 0, transition: { duration: 0.16 } }}
                 transition={{ duration: 0.3, ease }}
               >
-                {!loaded ? <ScreenSkeleton tab={tab} /> : tab === "marcador" ? <Home ctx={ctx} /> : tab === "tienda" ? <Store ctx={ctx} /> : <Week ctx={ctx} />}
+                {!loaded ? <ScreenSkeleton tab={tab} /> : tab === "marcador" ? <Home ctx={ctx} /> : tab === "tienda" ? <Store ctx={ctx} /> : tab === "notas" ? <Exams ctx={ctx} /> : <Week ctx={ctx} />}
               </motion.div>
             </AnimatePresence>
           )}
@@ -268,6 +273,7 @@ function Main({ me, reloadMe }: { me: Ctx["me"]; reloadMe: () => Promise<void> }
         <motion.button className="fab" onClick={() => setComposer(true)} aria-label={t("Subir comida")} whileTap={{ scale: 0.9, rotate: -4 }} transition={spring}>
           <PiCameraBold />
         </motion.button>
+        <TabBtn tab="notas" cur={tab} go={go} Icon={PiExamBold} IconOn={PiExamFill} label={t("Notas")} />
         <TabBtn tab="semana" cur={tab} go={go} Icon={PiCalendarDotsBold} IconOn={PiCalendarDotsFill} label={t("Semana")} />
         <TabBtn tab="config" cur={tab} go={go} Icon={PiSlidersHorizontalBold} IconOn={PiSlidersHorizontalFill} label={t("Config")} />
       </nav>

@@ -10,6 +10,7 @@ const reactions = readMigration("20261107000000_reactions.sql");
 const reglas = readMigration("20261108000000_reglas.sql");
 const tienda = readMigration("20261109000000_tienda_por_persona.sql");
 const extras = readMigration("20261110000000_margen_album_avisos.sql");
+const notas = readMigration("20261111000000_notas.sql");
 
 const stubs = `
 create role anon nologin; create role authenticated nologin; create role service_role nologin bypassrls;
@@ -64,6 +65,7 @@ await db.exec(reactions);
 await db.exec(reglas);
 await db.exec(tienda);
 await db.exec(extras);
+await db.exec(notas);
 ok(true, "migraciones aplicadas");
 
 const A = "00000000-0000-0000-0000-00000000000a";
@@ -223,6 +225,46 @@ ok(toClean.length === 5, `fotos anteriores a hoy para borrar: ${toClean.length}`
 const n = (await one(`select public.srv_mark_photos_deleted($1) as n`, [toClean.map((r) => r.id)])).n;
 ok(n === 5, "fotos marcadas como borradas");
 ok((await one(`select count(*)::int as n from public.meals`)).n === 6, "las comidas (data) siguen estando");
+
+// --- notas de exámenes ---
+const examPts = async (uid) => (await one(`select coalesce(sum(amount), 0)::int as s from public.point_events where user_id = $1 and exam_id is not null`, [uid])).s;
+const analisis = await as(A, () => one(`insert into public.exams (subject, grade) values ('Análisis', 8) returning *`));
+ok(analisis.user_id === A && analisis.review === null, "Luca carga un 8 en Análisis");
+await as(A, () => expectError(db.query(`insert into public.exams (subject, grade) values ('Trampa', 11)`), /check/, "la nota no puede pasar de 10"));
+await as(A, () => expectError(db.query(`insert into public.exams (subject, grade, review) values ('Trampa', 9, 'ok')`), /permission denied/, "no se puede autoaprobar una nota"));
+await as(B, () => expectError(db.query(`insert into public.exams (subject, grade, user_id) values ('Trampa', 9, $1)`, [A]), /permission denied/, "no se puede cargar una nota a nombre del otro"));
+await as(A, () => expectError(db.query(`select public.review_exam($1, 'ok')`, [analisis.id]), /own_exam/, "Luca no puede revisar su propia nota"));
+await as(B, () => db.query(`select public.review_exam($1, 'ok')`, [analisis.id]));
+ok((await examPts(A)) === 1 && (await examPts(B)) === 0, "Giovanna aprueba el 8 → +1 para Luca");
+await as(B, () => db.query(`select public.review_exam($1, 'rejected')`, [analisis.id]));
+ok((await examPts(A)) === 0, "si lo cambia a No cuenta, el punto se va");
+await as(B, () => db.query(`select public.review_exam($1, 'ok')`, [analisis.id]));
+await as(B, () => db.query(`select public.review_exam($1, 'ok')`, [analisis.id]));
+ok((await examPts(A)) === 1, "aprobarla dos veces no duplica el punto");
+const fisica = await as(A, () => one(`insert into public.exams (subject, grade) values ('Física', 5.5) returning *`));
+await as(B, () => db.query(`select public.review_exam($1, 'ok')`, [fisica.id]));
+ok((await examPts(B)) === 1 && (await examPts(A)) === 1, "Luca saca 5,5 en Física → +1 para Giovanna");
+const seis = await as(B, () => one(`insert into public.exams (subject, grade) values ('Anatomia', 6) returning *`));
+await as(A, () => db.query(`select public.review_exam($1, 'ok')`, [seis.id]));
+ok((await examPts(B)) === 2, "un 6 justo aprueba → +1 para quien lo sacó");
+await as(A, () => db.query(`delete from public.exams where id = $1`, [analisis.id]));
+ok(!!(await one(`select id from public.exams where id = $1`, [analisis.id])), "una nota que ya dio puntos no se puede borrar");
+const quimica = await as(A, () => one(`insert into public.exams (subject, grade) values ('Química', 7) returning *`));
+await as(B, () => db.query(`delete from public.exams where id = $1`, [quimica.id]));
+ok(!!(await one(`select id from public.exams where id = $1`, [quimica.id])), "Giovanna no puede borrar las notas de Luca");
+await as(A, () => db.query(`delete from public.exams where id = $1`, [quimica.id]));
+ok(!(await one(`select id from public.exams where id = $1`, [quimica.id])), "Luca borra su nota pendiente");
+ok((await as(C, () => all(`select * from public.exams`))).length === 0, "un tercero no ve las notas");
+await as(C, () => expectError(db.query(`select public.review_exam($1, 'rejected')`, [fisica.id]), /exam_not_found/, "un tercero no puede revisar notas"));
+const historia = await as(A, () => one(`insert into public.exams (subject, grade) values ('Historia', 9) returning *`));
+await db.query(`update public.exams set local_date = date '${today}' - 1 where id = $1`, [historia.id]);
+await all(`select * from public.srv_close_day(date '${today}' - 1)`);
+const hist = await one(`select review, review_auto from public.exams where id = $1`, [historia.id]);
+ok(hist.review === "ok" && hist.review_auto && (await examPts(A)) === 2, "la nota que nadie revisó se aprueba sola en el cierre y da su punto");
+await db.query(`update public.exams set local_date = date '${today}' - 3 where id = $1`, [fisica.id]);
+await as(B, () => expectError(db.query(`select public.review_exam($1, 'rejected')`, [fisica.id]), /review_closed/, "después del cierre la nota ya no se puede cambiar"));
+const ev = await one(`select kind, ref_date, source_user_id from public.point_events where exam_id = $1`, [fisica.id]);
+ok(ev.kind === "exam" && ev.source_user_id === A, "el punto queda en el libro como nota");
 
 // --- permisos de funciones del servidor ---
 await as(A, () => expectError(db.query(`select * from public.srv_close_day(current_date)`), /permission denied/, "un usuario no puede correr el cierre del día"));

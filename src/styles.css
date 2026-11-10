@@ -267,7 +267,7 @@ h1, h2, h3, h4, p { margin: 0; }
 /* ---------- tab bar ---------- */
 .tabbar {
   position: fixed; left: 0; right: 0; bottom: 0; z-index: 40;
-  display: grid; grid-template-columns: repeat(5, 1fr); align-items: start;
+  display: grid; grid-template-columns: repeat(6, 1fr); align-items: start;
   height: calc(var(--tabbar-h) + env(safe-area-inset-bottom));
   padding: 0 6px env(safe-area-inset-bottom);
   background: rgba(255, 255, 255, 0.92);
@@ -282,7 +282,7 @@ h1, h2, h3, h4, p { margin: 0; }
 .tab-icon { display: grid; position: relative; z-index: 1; }
 .tab-dot { position: absolute; top: 0; /* pegado al borde superior de la barra */ width: 26px; height: 4px; border-radius: 0 0 4px 4px; background: var(--ink); }
 .fab {
-  justify-self: center; width: 60px; height: 60px; margin-top: -14px; border-radius: 20px;
+  justify-self: center; width: 56px; height: 56px; margin-top: -14px; border-radius: 20px;
   display: grid; place-items: center; background: var(--fluo); color: var(--fluo-ink);
   box-shadow: 0 2px 4px rgba(30, 27, 22, 0.12), 0 14px 26px -12px rgba(30, 27, 22, 0.55);
 }
@@ -507,3 +507,36 @@ h1, h2, h3, h4, p { margin: 0; }
   .app { max-width: 520px; margin: 0 auto; box-shadow: 0 0 0 1px var(--line); min-height: 100dvh; }
   .tabbar { max-width: 520px; margin: 0 auto; }
 }
+
+/* ---------- notas ---------- */
+.exam-stats { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin: 0 16px 22px; }
+.exam-stat { display: grid; justify-items: start; gap: 2px; padding: 14px 14px 16px; border-radius: var(--r-lg); background: var(--canvas); }
+.exam-stat-who { display: flex; align-items: center; gap: 8px; margin-bottom: 6px; min-width: 0; }
+.exam-stat-who b { font-size: 15px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.exam-stat-avg { font-size: 52px; font-weight: 900; font-stretch: 62%; line-height: 0.9; letter-spacing: -0.02em; }
+.exam-stat-sub { font-size: 13px; font-weight: 650; color: var(--ink-2); }
+.exams { display: grid; gap: 10px; }
+.exam { display: grid; gap: 12px; padding: 14px; border-radius: var(--r-md); background: var(--ground); box-shadow: var(--shadow-1); }
+.exam-top { display: flex; align-items: center; gap: 12px; }
+.exam-main { flex: 1; min-width: 0; display: grid; gap: 2px; }
+.exam-main b { font-size: 17px; font-weight: 750; line-height: 1.2; overflow-wrap: anywhere; }
+.exam-main span { font-size: 13px; color: var(--ink-2); }
+.grade-tag { flex: none; display: grid; place-items: center; min-width: 58px; height: 52px; padding: 0 8px; border-radius: 6px; font-weight: 900; font-stretch: 62%; line-height: 1; transform: rotate(-2deg); }
+.grade-tag b { font-size: 34px; letter-spacing: -0.01em; }
+.grade-tag.pass { background: var(--vale-soft); color: var(--vale); }
+.grade-tag.fail { background: var(--nocuenta-soft); color: var(--nocuenta); }
+.exam.rejected .grade-tag { background: var(--canvas); color: var(--ink-3); }
+.exam.rejected .exam-main b { text-decoration: line-through; text-decoration-thickness: 2px; color: var(--ink-2); }
+.exam-verdict { flex: none; display: inline-flex; align-items: center; gap: 4px; padding: 5px 9px; border-radius: 6px; box-shadow: inset 0 0 0 2px currentColor; font-size: 12px; font-weight: 850; letter-spacing: 0.06em; text-transform: uppercase; }
+.exam-verdict svg { width: 14px; height: 14px; }
+.exam-verdict.ok { color: var(--vale); }
+.exam-verdict.no { color: var(--nocuenta); }
+.exam-point { display: inline-grid; gap: 1px; padding: 7px 12px; border-radius: 999px; font-size: 14px; font-weight: 800; }
+.exam-point small { font-size: 12px; font-weight: 650; opacity: 0.85; }
+.exam-point.plus { background: var(--vale-soft); color: var(--vale); }
+.exam-point.minus { background: var(--nocuenta-soft); color: var(--nocuenta); }
+.grade-input { font-size: 40px; font-weight: 900; font-stretch: 62%; text-align: center; min-height: 76px; transition: box-shadow 0.2s var(--ease-out), color 0.2s var(--ease-out); }
+.grade-input::placeholder { font-size: 22px; font-weight: 700; font-stretch: 80%; }
+.grade-input.pass { color: var(--vale); }
+.grade-input.fail { color: var(--nocuenta); }
+.grade-outcome { min-height: 36px; display: grid; justify-items: center; align-items: center; margin-top: -4px; }

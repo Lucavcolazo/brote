@@ -93,11 +93,27 @@ const MSG = {
     l === "pt" ? { title: "Ontem não teve fruta nem verdura", body: `+1 ponto para ${beneficiary}.` } : { title: "Ayer no hubo fruta ni verdura", body: `+1 punto para ${beneficiary}.` },
   earned: (l: Lang, failed: string): Push =>
     l === "pt" ? { title: "Você ganhou 1 ponto!", body: `${failed} não comeu nada verde ontem.` } : { title: "¡Sumaste 1 punto!", body: `${failed} ayer no comió nada verde.` },
+  exam: (l: Lang, who: Person, subject: string, grade: string): Push =>
+    l === "pt"
+      ? { title: `${who.name} tirou ${grade} em ${subject}`, body: "Entra pra conferir a nota." }
+      : { title: `${who.name} se sacó ${grade} en ${subject}`, body: "Entrá a revisar la nota." },
+  examReviewed: (l: Lang, by: Person, subject: string, grade: string, ok: boolean, pass: boolean): Push =>
+    l === "pt"
+      ? ok
+        ? { title: `${by.name} aprovou seu ${grade} em ${subject}`, body: pass ? "+1 ponto pra você." : `+1 ponto pra ${by.name}.` }
+        : { title: `${by.name} disse que seu ${grade} em ${subject} não vale`, body: "Não soma pontos." }
+      : ok
+        ? { title: `${by.name} aprobó tu ${grade} en ${subject}`, body: pass ? "+1 punto para vos." : `+1 punto para ${by.name}.` }
+        : { title: `${by.name} dice que tu ${grade} en ${subject} no cuenta`, body: "No suma puntos." },
   summary: (l: Lang, members: Array<{ name: string; days_ok: number; balance: number }>): Push => ({
     title: l === "pt" ? "Resumo da semana" : "Resumen de la semana",
     body: members.map((m) => `${m.name}: ${m.days_ok}/7 ${l === "pt" ? "dias" : "días"} · ${m.balance} pts`).join("  |  "),
   }),
 };
+
+// ---------- notas ----------
+const PASS_GRADE = 6; // igual que private.exam_pass_grade()
+const fmtGrade = (g: number | string, l: Lang) => Number(g).toLocaleString(l === "pt" ? "pt-BR" : "es-AR", { maximumFractionDigits: 1 });
 
 // ---------- fechas en hora argentina ----------
 function localToday(): string {
@@ -190,6 +206,25 @@ const actions: Record<string, (body: Record<string, unknown>) => Promise<unknown
     const by = await profile(String(user_id));
     if (!rx || !owner || !by) return { skipped: true };
     return sendTo([owner.id], { ...MSG.reacted(owner.lang, by, rx.emoji, meal.kind), url: "/?tab=feed", tag: `reaction-${meal.id}` });
+  },
+
+  async exam_created({ exam_id }) {
+    const { data: e } = await db.from("exams").select("*").eq("id", exam_id).single();
+    if (!e) return { skipped: "exam not found" };
+    const who = await profile(e.user_id);
+    const partner = who && (await partnerOf(who.id, e.couple_id));
+    if (!who || !partner) return { skipped: "no partner" };
+    return sendTo([partner.id], { ...MSG.exam(partner.lang, who, e.subject, fmtGrade(e.grade, partner.lang)), url: "/?tab=notas", tag: `exam-${e.id}` });
+  },
+
+  async exam_reviewed({ exam_id }) {
+    const { data: e } = await db.from("exams").select("*").eq("id", exam_id).single();
+    if (!e || !e.review) return { skipped: true };
+    const owner = await profile(e.user_id);
+    const partner = await partnerOf(e.user_id, e.couple_id);
+    if (!owner || !partner) return { skipped: "no partner" };
+    const pass = Number(e.grade) >= PASS_GRADE;
+    return sendTo([owner.id], { ...MSG.examReviewed(owner.lang, partner, e.subject, fmtGrade(e.grade, owner.lang), e.review === "ok", pass), url: "/?tab=notas", tag: `exam-${e.id}` });
   },
 
   async redemption_created({ redemption_id }) {

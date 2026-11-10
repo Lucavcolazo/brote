@@ -253,6 +253,38 @@ const PT: Record<string, string> = {
   "Cerrar sesión": "Sair",
   "Brote · las fotos se archivan solas cada miércoles, los puntos y comidas quedan.":
     "Brote · as fotos são arquivadas toda quarta, os pontos e comidas ficam.",
+  // notas de exámenes
+  "Notas": "Notas",
+  "Promedios": "Médias",
+  "Sin notas": "Sem notas",
+  "{ok} de {n} aprobadas": "{ok} de {n} aprovadas",
+  "6 o más: +1 punto para vos. Menos de 6: +1 para {name}.": "6 ou mais: +1 ponto pra você. Menos de 6: +1 pra {name}.",
+  "6 o más: +1 punto para vos. Menos de 6: +1 para tu pareja.": "6 ou mais: +1 ponto pra você. Menos de 6: +1 pro seu par.",
+  "Cargar nota": "Adicionar nota",
+  "Para revisar": "Para conferir",
+  "Todas las notas": "Todas as notas",
+  "Todavía no hay notas": "Ainda não tem notas",
+  "Cuando rindas un examen, cargá la nota acá.": "Quando fizer uma prova, coloca a nota aqui.",
+  "Si vale, +1 punto para {name}.": "Se valer, +1 ponto pra {name}.",
+  "Si vale, +1 punto para vos.": "Se valer, +1 ponto pra você.",
+  "+1 punto para vos": "+1 ponto pra você",
+  "+1 punto para {name}": "+1 ponto pra {name}",
+  "No suma puntos": "Não soma pontos",
+  "¿Borrar esta nota?": "Apagar esta nota?",
+  "Nota cargada": "Nota adicionada",
+  "¿Cuánto te sacaste?": "Quanto você tirou?",
+  "Materia": "Matéria",
+  "Ej: Análisis Matemático": "Ex: Cálculo",
+  "Nota": "Nota",
+  "Si {name} la aprueba: +1 punto para vos": "Se {name} aprovar: +1 ponto pra você",
+  "tu pareja": "seu par",
+  "Si {name} la aprueba: +1 punto para {name}": "Se {name} aprovar: +1 ponto pra {name}",
+  "La nota va de 0 a 10": "A nota vai de 0 a 10",
+  "Nota de examen": "Nota de prova",
+  "Sacaste {grade} en {subject}": "Você tirou {grade} em {subject}",
+  "{name} sacó {grade} en {subject}": "{name} tirou {grade} em {subject}",
+  "No podés revisar tu propia nota": "Você não pode conferir sua própria nota",
+  "Esa nota ya no está": "Essa nota não existe mais",
   // tiempos
   "recién": "agora",
   "hace {n} min": "há {n} min",
@@ -276,6 +308,9 @@ export function errorKey(raw: string): string {
   if (/not_enough_points/.test(raw)) return "No te alcanzan los puntos";
   if (/item_not_found/.test(raw)) return "Ese premio ya no existe";
   if (/own_item/.test(raw)) return "Tus premios los canjea tu pareja";
+  if (/own_exam/.test(raw)) return "No podés revisar tu propia nota";
+  if (/exam_not_found/.test(raw)) return "Esa nota ya no está";
+  if (/exams_grade_check/.test(raw)) return "La nota va de 0 a 10";
   if (/cannot_review/.test(raw)) return "No podés revisar tu propia comida";
   if (/not_pending/.test(raw)) return "Ese canje ya estaba cumplido";
   if (/app_full/.test(raw)) return "La app ya tiene sus 2 usuarios";
