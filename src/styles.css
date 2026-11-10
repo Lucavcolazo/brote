@@ -67,7 +67,7 @@ h1, h2, h3, h4, p { margin: 0; }
 .app { min-height: 100dvh; }
 .screen { padding-bottom: calc(var(--tabbar-h) + env(safe-area-inset-bottom) + 28px); }
 .pad { padding: 0 16px; }
-.page-head { padding: calc(env(safe-area-inset-top) + 22px) 16px 18px; display: flex; align-items: flex-end; justify-content: space-between; gap: 12px; }
+.page-head { padding: 16px 16px 18px; display: flex; align-items: flex-end; justify-content: space-between; gap: 12px; }
 .block { margin: 0 16px 28px; }
 .valance {
   height: 22px; margin: 0 0 24px;
@@ -146,7 +146,7 @@ h1, h2, h3, h4, p { margin: 0; }
   /* el tono se recalcula acá: si queda en :root, ignora el color que pone la app */
   --leader-tint: color-mix(in srgb, var(--leader) 20%, white);
   background: var(--leader-tint);
-  padding: calc(env(safe-area-inset-top) + 18px) 14px 26px;
+  padding: 16px 14px 26px;
   transition: background-color 0.6s var(--ease-out);
 }
 .market-head { display: flex; align-items: center; justify-content: space-between; margin-bottom: 14px; }
@@ -267,7 +267,7 @@ h1, h2, h3, h4, p { margin: 0; }
 /* ---------- tab bar ---------- */
 .tabbar {
   position: fixed; left: 0; right: 0; bottom: 0; z-index: 40;
-  display: grid; grid-template-columns: repeat(6, 1fr); align-items: start;
+  display: grid; grid-template-columns: repeat(5, 1fr); align-items: start;
   height: calc(var(--tabbar-h) + env(safe-area-inset-bottom));
   padding: 0 6px env(safe-area-inset-bottom);
   background: rgba(255, 255, 255, 0.92);
@@ -282,7 +282,7 @@ h1, h2, h3, h4, p { margin: 0; }
 .tab-icon { display: grid; position: relative; z-index: 1; }
 .tab-dot { position: absolute; top: 0; /* pegado al borde superior de la barra */ width: 26px; height: 4px; border-radius: 0 0 4px 4px; background: var(--ink); }
 .fab {
-  justify-self: center; width: 56px; height: 56px; margin-top: -14px; border-radius: 20px;
+  justify-self: center; width: 60px; height: 60px; margin-top: -14px; border-radius: 20px;
   display: grid; place-items: center; background: var(--fluo); color: var(--fluo-ink);
   box-shadow: 0 2px 4px rgba(30, 27, 22, 0.12), 0 14px 26px -12px rgba(30, 27, 22, 0.55);
 }
@@ -540,3 +540,34 @@ h1, h2, h3, h4, p { margin: 0; }
 .grade-input.pass { color: var(--vale); }
 .grade-input.fail { color: var(--nocuenta); }
 .grade-outcome { min-height: 36px; display: grid; justify-items: center; align-items: center; margin-top: -4px; }
+
+/* ---------- barra de arriba ---------- */
+.topbar {
+  position: sticky; top: 0; z-index: 45;
+  display: flex; align-items: center; justify-content: space-between; gap: 12px;
+  padding: calc(env(safe-area-inset-top) + 8px) 16px 8px;
+  background: rgba(255, 255, 255, 0.92);
+  backdrop-filter: blur(18px) saturate(1.6); -webkit-backdrop-filter: blur(18px) saturate(1.6);
+  box-shadow: 0 1px 0 var(--line);
+}
+.topbar-brand { display: inline-flex; align-items: center; gap: 9px; }
+.topbar-brand img { border-radius: 9px; }
+.topbar .wordmark { font-size: 24px; }
+.initial-btn {
+  width: 40px; height: 40px; border-radius: 50%; display: grid; place-items: center;
+  font-size: 19px; font-weight: 900; font-stretch: 75%; line-height: 1;
+  box-shadow: 0 0 0 3px var(--ground), 0 0 0 5px var(--line);
+}
+.menu-scrim { position: fixed; inset: 0; z-index: 46; }
+.account-menu {
+  position: absolute; z-index: 47; right: 12px; top: calc(100% + 6px); width: min(250px, calc(100vw - 24px));
+  display: grid; gap: 2px; padding: 8px; border-radius: 20px; background: var(--ground);
+  box-shadow: 0 0 0 1px var(--line), var(--shadow-2); transform-origin: calc(100% - 22px) -8px;
+}
+.account-head { display: flex; align-items: center; gap: 10px; padding: 6px 8px 10px; margin-bottom: 4px; border-bottom: 1px solid var(--line); }
+.account-head b { font-size: 16px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.menu-item { display: flex; align-items: center; gap: 12px; min-height: 46px; padding: 0 10px; border-radius: 12px; font-size: 15px; font-weight: 700; text-align: left; transition: background-color 0.15s var(--ease-out); }
+.menu-item:hover, .menu-item:focus-visible { background: var(--canvas); }
+.menu-item svg { width: 20px; height: 20px; flex: none; color: var(--ink-2); }
+.menu-item.danger, .menu-item.danger svg { color: var(--nocuenta); }
+#ajustes { scroll-margin-top: calc(env(safe-area-inset-top) + 72px); }

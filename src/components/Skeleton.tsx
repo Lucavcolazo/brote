@@ -49,7 +49,6 @@ export function HomeSkeleton() {
     <Busy>
       <section className="market sk-market">
         <div className="market-head">
-          <span className="wordmark">Brote</span>
           <Bone w={92} h={14} r={4} />
         </div>
         <div className="duo">
@@ -227,11 +226,18 @@ export function ScreenSkeleton({ tab }: { tab: Tab }) {
 export function BootSkeleton({ tab }: { tab: Tab }) {
   return (
     <div className="app">
+      <header className="topbar" aria-hidden>
+        <span className="topbar-brand">
+          <img src="/icons/icon.svg" alt="" width={30} height={30} />
+          <span className="wordmark">Brote</span>
+        </span>
+        <Bone w={38} h={38} r={999} />
+      </header>
       <main className="screen">
         <ScreenSkeleton tab={tab} />
       </main>
       <div className="tabbar sk-tabbar" aria-hidden>
-        {[0, 1, 2, 3, 4, 5].map((i) =>
+        {[0, 1, 2, 3, 4].map((i) =>
           i === 2 ? <span key={i} className="fab sk-fab" /> : (
             <span key={i} className="tab">
               <Bone w={25} h={25} r={8} />

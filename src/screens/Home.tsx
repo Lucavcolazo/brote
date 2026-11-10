@@ -77,7 +77,6 @@ export function Home({ ctx }: { ctx: Ctx }) {
     <>
       <section className="market" style={{ ["--leader" as string]: leaderColor }} aria-label={t("Marcador")}>
         <div className="market-head">
-          <span className="wordmark">Brote</span>
           <span className="market-note">
             {!me.partner ? "" : !leader ? t("Empate") : leader.id === me.userId ? t("Vas ganando por {n}", { n: gap }) : t("{name} gana por {n}", { name: leader.name, n: gap })}
           </span>

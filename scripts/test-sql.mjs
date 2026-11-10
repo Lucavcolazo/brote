@@ -11,6 +11,7 @@ const reglas = readMigration("20261108000000_reglas.sql");
 const tienda = readMigration("20261109000000_tienda_por_persona.sql");
 const extras = readMigration("20261110000000_margen_album_avisos.sql");
 const notas = readMigration("20261111000000_notas.sql");
+const reparar = readMigration("20261112000000_reparar_reglas.sql");
 
 const stubs = `
 create role anon nologin; create role authenticated nologin; create role service_role nologin bypassrls;
@@ -66,6 +67,7 @@ await db.exec(reglas);
 await db.exec(tienda);
 await db.exec(extras);
 await db.exec(notas);
+await db.exec(reparar);
 ok(true, "migraciones aplicadas");
 
 const A = "00000000-0000-0000-0000-00000000000a";
@@ -275,6 +277,32 @@ ok(true, "A sube foto en su carpeta");
 await as(A, () => expectError(db.query(`insert into storage.objects (bucket_id, name) values ('meal-photos', $1)`, [`${couple.id}/${B}/no.jpg`]), /row-level security/, "A no sube en la carpeta de B"));
 const seenByC = await as(C, () => all(`select * from storage.objects`));
 ok(seenByC.length === 0, "C no ve fotos de la pareja");
+
+// --- base a la que le faltaba la migración de reglas (pasó en producción) ---
+{
+  const db2 = new PGlite();
+  await db2.exec(stubs);
+  for (const m of [migration, reactions, tienda, extras, notas, reparar]) await db2.exec(m);
+  await db2.exec(`insert into auth.users values ('${A}'), ('${B}')`);
+  const as2 = async (user, sql, params) => {
+    await db2.exec(`set role authenticated; select set_config('request.jwt.claim.sub', '${user}', false);`);
+    try {
+      return (await db2.query(sql, params)).rows;
+    } finally {
+      await db2.exec(`reset role;`);
+    }
+  };
+  await as2(A, `select public.claim_profile('Luca')`);
+  await as2(B, `select public.claim_profile('Giovanna')`);
+  await db2.exec(`update public.profiles set joined_at = now() - interval '10 days'`);
+  const [ex] = await as2(B, `insert into public.exams (subject, grade) values ('Gestión de datos', 7.5) returning id`);
+  await as2(A, `select public.review_exam($1, 'ok')`, [ex.id]);
+  const pts = (await db2.query(`select user_id from public.point_events where exam_id = $1`, [ex.id])).rows;
+  ok(pts.length === 1 && pts[0].user_id === B, "sin la migración de reglas + reparación: aprobar una nota anda");
+  const closed = (await db2.query(`select * from public.srv_close_day(private.local_today() - 1)`)).rows;
+  ok(closed.length === 2, "sin la migración de reglas + reparación: el cierre del día anda");
+  ok((await db2.query(`select private.grace_hour() as h`)).rows[0].h === 8, "la reparación deja el cierre a las 8:00");
+}
 
 console.log(failures ? `\n${failures} prueba(s) fallaron` : "\nTodo OK");
 process.exit(failures ? 1 : 0);

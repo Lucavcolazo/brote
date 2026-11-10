@@ -7,8 +7,6 @@ import {
   PiCameraBold,
   PiExamBold,
   PiExamFill,
-  PiSlidersHorizontalBold,
-  PiSlidersHorizontalFill,
   PiStorefrontBold,
   PiStorefrontFill,
   PiTicketBold,
@@ -16,6 +14,7 @@ import {
 } from "react-icons/pi";
 import { api, type Exam, type Me, type Meal, type PointEvent, type Redemption, type StoreItem, type Streak, type AlbumItem, type WeeklySummary } from "./api";
 import { BootSkeleton, ScreenSkeleton } from "./components/Skeleton";
+import { TopBar, type ConfigSection } from "./components/TopBar";
 import { avatarOf } from "./config";
 import { I18nProvider, useI18n } from "./i18n";
 import { addDays, localToday } from "./lib/dates";
@@ -215,6 +214,21 @@ function Main({ me, reloadMe }: { me: Ctx["me"]; reloadMe: () => Promise<void> }
     [tab],
   );
 
+  // Config ya no está en la barra de abajo: se abre desde el menú de tu inicial, arriba.
+  const [configFocus, setConfigFocus] = useState<{ section: ConfigSection; at: number }>({ section: "perfil", at: 0 });
+  const openConfig = useCallback(
+    (section: ConfigSection) => {
+      setConfigFocus({ section, at: Date.now() });
+      if (tab === "config") {
+        if (section === "perfil") window.scrollTo({ top: 0, behavior: "smooth" });
+        return;
+      }
+      scrollMemory.current.config = 0;
+      go("config");
+    },
+    [tab, go],
+  );
+
   useLayoutEffect(() => {
     if (pendingScroll.current === null) return;
     window.scrollTo({ top: pendingScroll.current });
@@ -238,6 +252,7 @@ function Main({ me, reloadMe }: { me: Ctx["me"]; reloadMe: () => Promise<void> }
 
   return (
     <div className="app">
+      <TopBar profile={me.profile} onOpenConfig={openConfig} />
 
       <AnimatePresence mode="popLayout" initial={false} custom={shift}>
         <motion.main
@@ -250,7 +265,7 @@ function Main({ me, reloadMe }: { me: Ctx["me"]; reloadMe: () => Promise<void> }
           exit="exit"
         >
           {tab === "config" ? (
-            <ConfigScreen ctx={ctx} />
+            <ConfigScreen ctx={ctx} focus={configFocus} />
           ) : (
             <AnimatePresence mode="wait" initial={false}>
               <motion.div
@@ -275,7 +290,6 @@ function Main({ me, reloadMe }: { me: Ctx["me"]; reloadMe: () => Promise<void> }
         </motion.button>
         <TabBtn tab="notas" cur={tab} go={go} Icon={PiExamBold} IconOn={PiExamFill} label={t("Notas")} />
         <TabBtn tab="semana" cur={tab} go={go} Icon={PiCalendarDotsBold} IconOn={PiCalendarDotsFill} label={t("Semana")} />
-        <TabBtn tab="config" cur={tab} go={go} Icon={PiSlidersHorizontalBold} IconOn={PiSlidersHorizontalFill} label={t("Config")} />
       </nav>
 
       <NewMealSheet

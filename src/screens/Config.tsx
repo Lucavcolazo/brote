@@ -30,6 +30,7 @@ import { enablePush, isIos, pushState, type PushState } from "../lib/push";
 import { Segmented, Switch, errMsg, press, spring, useToast } from "../ui";
 import { LangPicker } from "./Auth";
 import { Valance } from "../components/Valance";
+import type { ConfigSection } from "../components/TopBar";
 
 type Part = "shape" | "color" | "eyes" | "mouth" | "extra" | "face" | "hands";
 
@@ -46,7 +47,7 @@ function pick<T>(list: readonly T[]): T {
   return list[Math.floor(Math.random() * list.length)];
 }
 
-export function ConfigScreen({ ctx }: { ctx: Ctx }) {
+export function ConfigScreen({ ctx, focus }: { ctx: Ctx; focus?: { section: ConfigSection; at: number } }) {
   const { t, lang, setLang } = useI18n();
   const { me, reloadMe } = ctx;
   const toast = useToast();
@@ -60,6 +61,13 @@ export function ConfigScreen({ ctx }: { ctx: Ctx }) {
   useEffect(() => {
     pushState().then(setPush);
   }, []);
+
+  // Desde el menú de arriba: "Configuración" baja directo a los ajustes (después de que entra la pantalla).
+  useEffect(() => {
+    if (focus?.section !== "ajustes") return;
+    const id = setTimeout(() => document.getElementById("ajustes")?.scrollIntoView({ behavior: "smooth", block: "start" }), 320);
+    return () => clearTimeout(id);
+  }, [focus?.section, focus?.at]);
 
   const avatarDirty = JSON.stringify(draft) !== JSON.stringify(saved);
   const nameDirty = name.trim() !== me.profile.name && name.trim().length > 0;
@@ -221,7 +229,7 @@ export function ConfigScreen({ ctx }: { ctx: Ctx }) {
         </AnimatePresence>
       </section>
 
-      <div className="settings">
+      <div className="settings" id="ajustes">
         <div className="setting">
           <div className="setting-head">
             <PiUserBold aria-hidden />

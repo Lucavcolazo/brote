@@ -285,6 +285,11 @@ const PT: Record<string, string> = {
   "{name} sacó {grade} en {subject}": "{name} tirou {grade} em {subject}",
   "No podés revisar tu propia nota": "Você não pode conferir sua própria nota",
   "Esa nota ya no está": "Essa nota não existe mais",
+  // menú de la cuenta
+  "Tu cuenta": "Sua conta",
+  "Editar perfil": "Editar perfil",
+  "Configuración": "Configurações",
+  "¿Cerrar sesión en este celu?": "Sair neste celular?",
   // tiempos
   "recién": "agora",
   "hace {n} min": "há {n} min",
